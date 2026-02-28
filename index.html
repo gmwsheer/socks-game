@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>老子臭丝袜飞行棋 - 丝袜统治者远程版</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Courier New', monospace; background: linear-gradient(45deg, #1a0000, #330011); min-height: 100dvh; margin: 0; overscroll-behavior: none; }
+    .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
+    #board-container { position: relative; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; margin: 0 auto; }
+    #board { background: rgba(0,0,0,0.9); border-radius: 2rem; border: 6px solid #db2777; width: 100%; height: 100%; box-shadow: 0 0 50px #ff0080; }
+    .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.5rem; transition: all 0.2s; }
+    #task { animation: silkPop 0.4s ease-out; }
+    @keyframes silkPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .msg-master { color: #ff0080; font-weight: bold; border-left: 4px solid #ff0080; padding-left: 8px; margin-bottom: 4px; }
+  </style>
+</head>
+<body class="text-lime-300 p-4">
+<div class="max-w-4xl mx-auto">
+  <div class="text-center mb-6">
+    <h1 class="text-4xl font-black text-pink-600 neon-pink">老子臭丝袜飞行棋</h1>
+    <p class="text-pink-400 mt-2">V5 统治者版 · 全动作同步</p>
+  </div>
+
+  <div id="connPanel" class="bg-black/80 border-4 border-pink-600 p-6 rounded-3xl mb-6">
+    <div class="flex flex-col gap-4 justify-center items-center">
+      <button onclick="createRoom()" class="btn-xl bg-pink-600 text-white w-full">创建房间（成为丝袜主人）</button>
+      <div class="flex flex-col gap-2 w-full">
+        <input id="joinID" placeholder="输入房号加入调教" class="bg-zinc-900 border-4 border-pink-500 px-6 py-3 text-xl rounded-2xl text-white outline-none">
+        <button onclick="joinRoom()" class="btn-xl bg-pink-500 text-black w-full">加入当丝袜奴隶</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="gameArea" class="hidden space-y-4">
+    <div id="displayRoomID" class="bg-pink-900/50 border-2 border-pink-500 p-2 rounded-2xl text-center">
+      <span class="text-pink-300 text-xs">房号：</span>
+      <span id="currentIDLabel" class="text-2xl font-mono font-black text-white"></span>
+    </div>
+
+    <div class="grid grid-cols-3 gap-2">
+      <button onclick="sendQuickMsg('狗东西，快点闻！')" class="bg-pink-900 text-white text-xs py-2 rounded-lg border border-pink-500">快点闻</button>
+      <button onclick="sendQuickMsg('不许射！给我憋着！')" class="bg-pink-900 text-white text-xs py-2 rounded-lg border border-pink-500">不许射</button>
+      <button onclick="sendQuickMsg('扇自己！大声点！')" class="bg-pink-900 text-white text-xs py-2 rounded-lg border border-pink-500">自扇</button>
+    </div>
+
+    <div id="board-container">
+      <canvas id="board"></canvas>
+    </div>
+
+    <div id="info" class="bg-black border-4 border-pink-500 p-4 rounded-2xl text-center text-xl font-black">等待贱狗连接...</div>
+
+    <div class="flex gap-2">
+      <button onclick="rollDice()" id="rollBtn" class="flex-[2] bg-pink-600 text-white text-2xl font-black py-4 rounded-2xl active:scale-95 disabled:opacity-50">掷骰子</button>
+      <button onclick="resetGame()" class="flex-1 bg-zinc-800 text-white rounded-2xl text-sm">重置</button>
+    </div>
+
+    <div id="log" class="bg-black/90 border-2 border-pink-900 p-4 rounded-xl h-40 overflow-y-auto font-mono text-sm text-pink-300 shadow-inner"></div>
+  </div>
+</div>
+
+<div id="task" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4">
+  <div class="bg-zinc-950 border-[10px] border-pink-600 w-full max-w-2xl rounded-[40px] p-8 text-center shadow-[0_0_100px_#ff0080]">
+    <div id="task-num" class="text-6xl mb-4">🧦</div>
+    <div id="task-text" class="text-xl leading-relaxed text-pink-100 mb-8"></div>
+    <button onclick="closeTask()" class="w-full bg-pink-600 text-white text-xl font-black py-4 rounded-2xl shadow-lg">遵命，主人</button>
+  </div>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCzuqADikKXCOKtQXoiVkGRjPiceY-HVDk",
+    authDomain: "swsgfxq-game.firebaseapp.com",
+    databaseURL: "https://swsgfxq-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "swsgfxq-game",
+    storageBucket: "swsgfxq-game.firebasestorage.app",
+    messagingSenderId: "591308485557",
+    appId: "1:591308485557:web:045018427b5e90076f9ffc"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const tasks = {
+    1: "双膝跪地，向丝袜主人请安", 2: "自抽耳光 5 下", 3: "抚摸敏感区深呼吸丝袜味道 30 秒让味道侵入你的大脑", 
+    4: "原地转圈 10 次并叫：我是丝袜奴隶", 5: "用舌头清理丝袜上的褶皱", 6: "后退 2 格并将鼻勾和口撑戴上（5分钟后可选择摘下）",
+    7: "双手比耶喊我是贱狗，前进 3 格", 8: "保持跪姿翻白眼伸舌头直到下一回合", 9: "捏着乳头亲吻丝袜 10 次让丝袜代替你思考", 
+    10: "主人踩在脸上 1 分钟喊我是主人得臭鞋垫", 11: "左右手扇自己 10 下", 12: "闻一分钟臭丝袜让气息包裹着你的脑子", 
+    13: "原地学狗爬一圈喊着旺旺", 14: "大声朗读：我是主人的丝袜无脑贱畜", 15: "后退到起跑点留着口水翻着白眼1分钟", 
+    16: "捏揉奶子一分钟，前进 5 格", 17: "伸出舌头模仿狗叫 20 声", 18: "把丝袜蒙在头上直到完成下一个任务", 
+    19: "身上还有衣服吗都脱了不要影响喷射狗精", 20: "暂停一回合用鸡巴蹭丝袜不许用手", 21: "自摸 1 分钟不许射，早泄废物自行缩减", 
+    22: "扇自己乳头淫叫 20 下", 23: "大力捏疼奶子向主人求饶", 24: "脑子懵了吗再问一口臭袜子前进 2 格", 
+    25: "用脸蹭主人的袜子，听从主人吩咐", 26: "屏住呼吸闻臭味 30 秒让丝袜彻底代替你的脑子", 27: "站起来单手敬礼说我是主人的忠实无脑贱畜", 
+    28: "向主人磕头大声喊出我是主人的骚狗", 29: "回到白痴状态，后退 4 格", 30: "主人可以随意下达一个指令", 
+    31: "舔舐主人的丝袜让主人的丝袜侵入你的身体四肢", 32: "模仿狗乞食的动作学狗叫10声", 33: "闻着丝袜离着被丝袜改造越来越近，前进 1 格", 
+    34: "喊着主人自扇嘴巴 15 下", 35: "又变成了白痴状态，后退 5 格", 36: "叼着丝袜跪着爬（主人定时间）", 
+    37: "把臭丝袜塞进嘴吸允汁液1 分钟", 38: "套着丝袜让气息改造你的鸡巴前进 3 格", 39: "淫荡扭曲：谢谢主人调教", 
+    40: "又变白痴了，脑子液化了吧后退 3 格", 41: "撸着鸡巴扇10 个耳光", 42: "保持跪姿翻白眼伸舌头流口水2 分钟", 
+    43: "距离终点一步之遥，恶堕吧把脑子扔掉听从主人的命令", 44: "终点：口里喊着我是主人的人骚狗射出来！彻底恶堕永远成为丝袜无脑贱畜！"
+  };
+
+  let myColor = -1;
+  let positions = [0, 0];
+  let currentPlayer = 0;
+  let lastMsgId = "";
+  const maxPos = 44;
+  const canvas = document.getElementById('board');
+  const ctx = canvas.getContext('2d');
+  let roomRef = null;
+
+  function log(msg, isMaster = false){
+    const logBox = document.getElementById("log");
+    const div = document.createElement("div");
+    if(isMaster) div.className = "msg-master";
+    div.innerHTML = `> ${msg}`;
+    logBox.appendChild(div);
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+
+  function drawBoard(){
+    if(canvas.width !== canvas.clientWidth) {
+      canvas.width = canvas.clientWidth;
+      canvas.height = canvas.clientWidth;
+    }
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const cols = 7;
+    const size = canvas.width / cols;
+    for(let i=0; i<=maxPos; i++){
+      let row = Math.floor(i / cols);
+      let col = i % cols;
+      if(row % 2 !== 0) col = (cols - 1) - col;
+      const x = col * size, y = (cols - 1 - row) * size;
+      ctx.strokeStyle = "#444";
+      ctx.strokeRect(x, y, size, size);
+      ctx.fillStyle = "#555";
+      ctx.font = "10px Arial";
+      ctx.fillText(i, x+2, y+10);
+      if(positions[0] === i) {
+        ctx.fillStyle = "red";
+        ctx.beginPath(); ctx.arc(x+size/3, y+size/2, 8, 0, Math.PI*2); ctx.fill();
+      }
+      if(positions[1] === i) {
+        ctx.fillStyle = "#00ffff";
+        ctx.beginPath(); ctx.arc(x+size*2/3, y+size/2, 8, 0, Math.PI*2); ctx.fill();
+      }
+    }
+  }
+
+  function createRoom(){
+    const id = Math.random().toString(36).substring(2,8).toUpperCase();
+    roomRef = db.ref("rooms/"+id);
+    myColor = 0;
+    roomRef.set({ positions:[0,0], currentPlayer:0, lastMsg: {id: Date.now(), text: "主人已降临，跪下！", isAlert: false} });
+    document.getElementById("currentIDLabel").innerText = id;
+    setupSync();
+  }
+
+  function joinRoom(){
+    const id = document.getElementById("joinID").value.trim().toUpperCase();
+    if(!id) return alert("请输入房号");
+    roomRef = db.ref("rooms/"+id);
+    myColor = 1;
+    document.getElementById("currentIDLabel").innerText = id;
+    setupSync();
+    roomRef.child("lastMsg").set({id: Date.now(), text: "贱狗已爬进房间，请调教！", isAlert: false});
+  }
+
+  function setupSync(){
+    roomRef.on("value",(snap)=>{
+      const data = snap.val();
+      if(!data) return;
+      positions = data.positions;
+      currentPlayer = data.currentPlayer;
+      
+      // 同步全场动态文字
+      if(data.lastMsg && data.lastMsg.id !== lastMsgId) {
+        log(data.lastMsg.text, data.lastMsg.isMaster);
+        if(data.lastMsg.isAlert) {
+            document.getElementById("task-text").innerText = data.lastMsg.text;
+            document.getElementById("task-num").innerText = "⚠️ 主人指令";
+            document.getElementById("task").classList.remove("hidden");
+        }
+        lastMsgId = data.lastMsg.id;
+      }
+
+      document.getElementById("connPanel").classList.add("hidden");
+      document.getElementById("gameArea").classList.remove("hidden");
+      const isMyTurn = (currentPlayer === myColor);
+      document.getElementById("info").innerHTML = 
+        (currentPlayer===0?"红丝袜主人":"蓝丝袜贱狗") + (isMyTurn ? "<br><span class='text-yellow-300'>到你了！</span>" : "<br>等待中...");
+      document.getElementById("rollBtn").disabled = !isMyTurn;
+      drawBoard();
+    });
+  }
+
+  function rollDice(){
+    const d = Math.floor(Math.random()*6)+1;
+    const pName = myColor === 0 ? "主人" : "贱狗";
+    positions[currentPlayer] += d;
+    if(positions[currentPlayer] >= maxPos) positions[currentPlayer] = maxPos;
+    
+    const taskContent = tasks[positions[currentPlayer]];
+    const msgText = `${pName} 掷出 ${d}点，停留在 ${positions[currentPlayer]}格：${taskContent}`;
+    
+    // 自己端弹窗
+    showTask(positions[currentPlayer]);
+
+    // 同步给数据库
+    roomRef.update({ 
+      positions: positions, 
+      currentPlayer: (currentPlayer === 0 ? 1 : 0),
+      lastMsg: { id: Date.now(), text: msgText, isMaster: (myColor===0) }
+    });
+  }
+
+  function sendQuickMsg(txt){
+    if(!roomRef) return;
+    roomRef.child("lastMsg").set({
+      id: Date.now(),
+      text: "【主人指令】" + txt,
+      isMaster: true,
+      isAlert: true // 强制让对方弹出窗口！
+    });
+  }
+
+  function showTask(pos){
+    if(pos === 0) return;
+    document.getElementById("task-text").innerText = tasks[pos];
+    document.getElementById("task-num").innerText = "第 " + pos + " 格";
+    document.getElementById("task").classList.remove("hidden");
+  }
+
+  function closeTask(){ document.getElementById("task").classList.add("hidden"); }
+  
+  function resetGame(){
+    if(confirm("重置所有进度？")) {
+      roomRef.set({ 
+        positions: [0,0], 
+        currentPlayer: 0,
+        lastMsg: { id: Date.now(), text: "🔄 游戏重置，重新开始调教！", isMaster: true }
+      });
+      drawBoard();
+    }
+  }
+
+  window.addEventListener('resize', drawBoard);
+</script>
+</body>
+</html>
