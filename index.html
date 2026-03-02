@@ -11,7 +11,23 @@
     body { font-family: 'Courier New', monospace; background: linear-gradient(45deg, #1a0000, #330011); min-height: 100dvh; margin: 0; overscroll-behavior: none; }
     .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
     
-    /* 棋盘容器 */
+    /* ✅ 修复：BGM开关固定在最顶端 */
+    #bgm-ctrl {
+      position: fixed; 
+      top: 10px; 
+      right: 10px; 
+      z-index: 9999; /* 确保在最上层 */
+      background: rgba(0, 0, 0, 0.8); 
+      border: 2px solid #db2777;
+      color: #ff0080; 
+      padding: 8px 16px; 
+      border-radius: 20px;
+      font-size: 14px; 
+      cursor: pointer; 
+      box-shadow: 0 0 15px #ff0080;
+      backdrop-filter: blur(5px);
+    }
+    
     #board-container { 
       position: relative; 
       width: 100%; 
@@ -24,28 +40,19 @@
       overflow: hidden; 
       background: #000;
     }
-    #board { width: 100%; height: 100%; display: block; position: relative; z-index: 1; }
+    #board { width: 100%; height: 100%; display: block; position: relative; z-index: 10; }
 
-    /* ✅ 棋盘整体半透明 GIF 叠加层 */
+    /* ✅ GIF 半透明遮罩 */
     #board-gif-overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
-      /* 这里的路径对应你上传到 images 文件夹的文件 */
       background: url('assets/images/mask.gif') center/cover no-repeat;
-      opacity: 0.3; /* 透明度 0.3 */
-      pointer-events: none; /* ❗关键：允许点击穿透，不影响棋盘操作 */
+      opacity: 0.3; 
+      pointer-events: none; 
       z-index: 5;
     }
 
     .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.5rem; transition: all 0.2s; }
-    
-    #bgm-ctrl {
-      position: fixed; top: 15px; right: 15px; z-index: 100;
-      background: rgba(0, 0, 0, 0.7); border: 2px solid #db2777;
-      color: #ff0080; padding: 6px 15px; border-radius: 20px;
-      font-size: 13px; cursor: pointer; box-shadow: 0 0 10px #ff0080;
-      backdrop-filter: blur(4px);
-    }
     #task { animation: silkPop 0.4s ease-out; }
     @keyframes silkPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   </style>
@@ -66,7 +73,7 @@
 
   <div id="connPanel" class="bg-black/80 border-4 border-pink-600 p-6 rounded-3xl mb-6 shadow-2xl">
     <div class="flex flex-col gap-4">
-      <button onclick="createRoom()" class="btn-xl bg-pink-600 text-white w-full active:scale-95">创建房间（成为丝袜主人）</button>
+      <button onclick="createRoom()" class="btn-xl bg-pink-600 text-white w-full active:scale-95">创建房间（成为丝袜奴隶）</button>
       <div class="flex flex-col gap-2">
         <input id="joinID" placeholder="输入房号加入调教" class="bg-zinc-900 border-4 border-pink-500 px-6 py-3 text-xl rounded-2xl text-white text-center outline-none">
         <button onclick="joinRoom()" class="btn-xl bg-pink-500 text-black w-full active:scale-95">加入（成为丝袜贱畜）</button>
@@ -85,12 +92,13 @@
       <div id="board-gif-overlay"></div>
     </div>
 
-    <div id="info" class="bg-black/80 border-4 border-pink-500 p-4 rounded-2xl text-center text-xl font-black shadow-inner">等待同步...</div>
+    <div id="info" class="bg-black/80 border-4 border-pink-500 p-4 rounded-2xl text-center text-xl font-black">等待同步...</div>
     
     <div class="flex gap-2">
-      <button onclick="rollDice()" id="rollBtn" class="flex-[2] bg-pink-600 text-white text-2xl font-black py-4 rounded-2xl shadow-lg active:scale-95 disabled:opacity-50">恶堕吧</button>
+      <button onclick="rollDice()" id="rollBtn" class="flex-[2] bg-pink-600 text-white text-2xl font-black py-4 rounded-2xl shadow-lg active:scale-95">恶堕吧</button>
       <button onclick="resetGame()" class="flex-1 bg-zinc-800 text-white rounded-2xl text-sm">清空大脑</button>
     </div>
+
     <div id="log" class="bg-black/90 border-2 border-pink-900 p-4 rounded-xl h-40 overflow-y-auto font-mono text-sm text-pink-300"></div>
   </div>
 </div>
@@ -103,7 +111,6 @@
 </div>
 
 <script>
-  // ✅ 你的 Firebase 配置
   const firebaseConfig = {
     apiKey: "AIzaSyCzuqADikKXCOKtQXoiVkGRjPiceY-HVDk",
     authDomain: "swsgfxq-game.firebaseapp.com",
@@ -135,10 +142,9 @@
     43: "距离终点一步之遥，恶堕吧把脑子扔掉听从主人的命令", 44: "终点：口里喊着我是主人的人骚狗射出来！彻底恶堕永远成为丝袜无脑贱畜！"
   };
 
-    let myColor = -1, positions = [0, 0], currentPlayer = 0, roomRef = null;
+    let myColor = -1, positions = [0, 0], currentPlayer = 0, roomRef = null, lastMsgId = "";
   const maxPos = 44, canvas = document.getElementById('board'), ctx = canvas.getContext('2d');
 
-  // 解锁音频权限
   function unlockAudio() {
     ["snd-bgm", "snd-dice", "snd-task"].forEach(id => {
       const el = document.getElementById(id);
@@ -146,7 +152,6 @@
     });
   }
 
-  // BGM 开关切换
   function toggleBGM() {
     const bgm = document.getElementById("snd-bgm");
     const btn = document.getElementById("bgm-ctrl");
@@ -162,21 +167,20 @@
     }
   }
 
-  // 立即显示游戏区域
-  function enterGameUI(id) {
+  function showGameArea(id) {
     document.getElementById("currentIDLabel").innerText = id;
     document.getElementById("connPanel").classList.add("hidden");
     document.getElementById("gameArea").classList.remove("hidden");
-    setTimeout(drawBoard, 100);
+    setTimeout(drawBoard, 200);
   }
 
   function createRoom(){
     unlockAudio();
     const id = Math.random().toString(36).substring(2,8).toUpperCase();
     myColor = 0;
-    enterGameUI(id); // ❗ 立即切换 UI
+    showGameArea(id);
     roomRef = db.ref("rooms/"+id);
-    roomRef.set({ positions:[0,0], currentPlayer:0 }).then(() => setupSync());
+    roomRef.set({ positions:[0,0], currentPlayer:0, lastMsg: {id: Date.now(), text: "调教开始"} }).then(() => setupSync());
   }
 
   function joinRoom(){
@@ -184,17 +188,29 @@
     const id = document.getElementById("joinID").value.trim().toUpperCase();
     if(!id) return alert("请输入房号");
     myColor = 1;
-    enterGameUI(id); // ❗ 立即切换 UI
+    showGameArea(id);
     roomRef = db.ref("rooms/"+id);
     setupSync();
   }
 
+  // ✅ 核心：增加记录同步逻辑
   function setupSync(){
     roomRef.on("value",(snap)=>{
       const data = snap.val(); if(!data) return;
       positions = data.positions; currentPlayer = data.currentPlayer;
+      
+      // 更新文字记录
+      if(data.lastMsg && data.lastMsg.id !== lastMsgId){
+        const log = document.getElementById("log");
+        const entry = document.createElement("div");
+        entry.className = "mb-1 border-b border-pink-900/30 pb-1";
+        entry.innerText = `> ${data.lastMsg.text}`;
+        log.prepend(entry);
+        lastMsgId = data.lastMsg.id;
+      }
+
       const isMyTurn = (currentPlayer === myColor);
-      document.getElementById("info").innerHTML = (currentPlayer===0?"【主人】":"【贱畜】") + (isMyTurn ? "<br><span class='text-yellow-300'>到你了！</span>" : "<br>等待...");
+      document.getElementById("info").innerHTML = (currentPlayer===0?"【奴隶】":"【贱畜】") + (isMyTurn ? "<br><span class='text-yellow-300 text-2xl'>到你了！</span>" : "<br><span class='opacity-50'>等待中...</span>");
       document.getElementById("rollBtn").disabled = !isMyTurn;
       drawBoard();
     });
@@ -205,8 +221,16 @@
     const d = Math.floor(Math.random()*6)+1;
     positions[currentPlayer] += d;
     if(positions[currentPlayer] >= maxPos) positions[currentPlayer] = maxPos;
+    
+    const role = currentPlayer === 0 ? "【奴隶】" : "【贱畜】";
+    const msg = `${role} 掷出 ${d} 点，到达第 ${positions[currentPlayer]} 格`;
+    
+    roomRef.update({ 
+      positions, 
+      currentPlayer: (currentPlayer===0?1:0),
+      lastMsg: { id: Date.now(), text: msg }
+    });
     showTask(positions[currentPlayer]);
-    roomRef.update({ positions, currentPlayer: (currentPlayer===0?1:0) });
   }
 
   function showTask(pos){
@@ -218,6 +242,7 @@
   function closeTask(){ document.getElementById("task").classList.add("hidden"); }
   
   function drawBoard(){
+    if(canvas.clientWidth === 0) return;
     canvas.width = canvas.clientWidth; canvas.height = canvas.clientWidth;
     const cols = 7, size = canvas.width / cols;
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -225,13 +250,28 @@
       let row = Math.floor(i / cols), col = i % cols;
       if(row % 2 !== 0) col = (cols - 1) - col;
       const x = col * size, y = (cols - 1 - row) * size;
-      ctx.strokeStyle = "#444"; ctx.strokeRect(x, y, size, size);
-      if(positions[0] === i) { ctx.fillStyle = "red"; ctx.beginPath(); ctx.arc(x+size/2, y+size/2, 10, 0, Math.PI*2); ctx.fill(); }
-      if(positions[1] === i) { ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(x+size/2, y+size/2, 6, 0, Math.PI*2); ctx.fill(); }
+      ctx.strokeStyle = "#333"; ctx.strokeRect(x, y, size, size);
+      
+      // 画格子数字
+      ctx.fillStyle = "rgba(255,255,255,0.1)";
+      ctx.font = "10px Arial";
+      ctx.fillText(i, x+2, y+10);
+
+      // 主人棋子
+      if(positions[0] === i) { 
+        ctx.shadowBlur = 10; ctx.shadowColor = "red";
+        ctx.fillStyle = "red"; ctx.beginPath(); ctx.arc(x+size/2-5, y+size/2, 12, 0, Math.PI*2); ctx.fill(); 
+      }
+      // 贱畜棋子
+      if(positions[1] === i) { 
+        ctx.shadowBlur = 10; ctx.shadowColor = "#00ffff";
+        ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(x+size/2+5, y+size/2, 8, 0, Math.PI*2); ctx.fill(); 
+      }
+      ctx.shadowBlur = 0;
     }
   }
 
-  function resetGame(){ if(confirm("重置调教进度？")) roomRef.update({positions:[0,0], currentPlayer:0}); }
+  function resetGame(){ if(confirm("重置所有进度？")) roomRef.update({positions:[0,0], currentPlayer:0, lastMsg: {id: Date.now(), text: "调教进度已重置"}}); }
   window.addEventListener('resize', drawBoard);
 </script>
 </body>
