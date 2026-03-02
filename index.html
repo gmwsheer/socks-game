@@ -7,30 +7,33 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* ✅ 1. 背景路径修复：指向 assets/images/bg.jpg */
+ <style>
+    /* ✅ 1. 背景锁死：强制加载 bg.jpg，即便加载失败也保留深紫渐变底色 */
     html, body {
       margin: 0;
       padding: 0;
       min-height: 100vh;
+      /* 这里指向 assets/images/bg.jpg 漩涡背景图 */
       background: #1a001a url('assets/images/bg.jpg') no-repeat center center fixed !important;
       background-size: cover !important;
       color: #bef264;
       font-family: 'Courier New', monospace;
     }
 
-    /* ✅ 2. BGM按钮：彻底变短，钉在最右上角 */
+    /* ✅ 2. BGM按钮定位：彻底变短，固定在右上角 */
     #bgm-header {
-      position: fixed !important;
+      position: fixed !important; /* 固定在窗口，不随滚动条走 */
       top: 15px !important;
       right: 15px !important;
-      z-index: 99999;
-      width: auto !important;
+      z-index: 100000; /* 确保在最顶层 */
+      width: auto !important; /* 严禁占满全宽 */
+      display: block !important;
     }
+
     #bgm-ctrl {
-      display: inline-flex !important; 
+      display: inline-flex !important; /* 关键：让背景只包裹文字 */
       align-items: center;
-      background: rgba(0, 0, 0, 0.85) !important;
+      background: rgba(0, 0, 0, 0.85) !important; /* BGM按钮本身保持稍深色调 */
       border: 2px solid #ff0080 !important;
       color: #ff0080 !important;
       padding: 5px 12px !important;
@@ -39,10 +42,21 @@
       font-weight: bold;
       box-shadow: 0 0 15px rgba(255, 0, 128, 0.6);
       cursor: pointer;
-      white-space: nowrap !important;
+      white-space: nowrap !important; /* 禁止文字折行导致变长 */
     }
 
-    /* ✅ 3. 布局避让：向下推 80px 确保不压标题 */
+    /* ✅ 3. 界面层级优化：将所有黑色面板改为半透明 */
+    #connPanel, #gameArea > div, #log {
+      /* rgba(红, 绿, 蓝, 透明度) -> 0.75 表示 75% 的不透明度 */
+      background-color: rgba(0, 0, 0, 0.75) !important; /* 半透明黑 */
+      border: 2px solid #db2777 !important;
+      /* 毛玻璃模糊效果：增加背景图的炫晕感，且不影响文字阅读 */
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px); /* 兼容 Safari */
+      border-radius: 1.5rem;
+    }
+
+    /* 4. 标题间距避让：向下推 80px */
     .main-layout {
       margin-top: 80px !important; 
       padding: 0 15px 40px 15px;
@@ -50,24 +64,22 @@
 
     .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
     
-    #connPanel, #gameArea > div, #log {
-      background-color: rgba(0, 0, 0, 0.8) !important;
-      border: 2px solid #db2777 !important;
-      backdrop-filter: blur(6px);
-      border-radius: 1.5rem;
-    }
-
     #board-container { 
       position: relative; width: 100%; max-width: 500px; aspect-ratio: 1 / 1; 
       margin: 0 auto; border-radius: 1.5rem; border: 4px solid #db2777;
-      box-shadow: 0 0 30px #ff0080; overflow: hidden; background: rgba(0,0,0,0.4);
+      box-shadow: 0 0 30px #ff0080; overflow: hidden;
+      /* 棋盘底色也改为半透明 */
+      background: rgba(0,0,0,0.5); 
     }
     #board { width: 100%; height: 100%; display: block; position: relative; z-index: 10; }
+    
+    /* 这是棋盘上的 GIF 遮罩 */
     #board-gif-overlay {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: url('assets/images/mask.gif') center/cover no-repeat;
       opacity: 0.35; pointer-events: none; z-index: 5;
     }
+    
     .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.25rem; }
   </style>
 </head>
@@ -187,12 +199,14 @@
     enterUI();
   }
 
-  function enterUI(){
+ function enterUI(){
     document.getElementById("connPanel").classList.add("hidden");
     document.getElementById("gameArea").classList.remove("hidden");
     roomRef.on("value", (snap) => {
       const data = snap.val(); if(!data) return;
       positions = data.positions; currentPlayer = data.currentPlayer;
+      
+      // ✅ 修复：确保文字同步到底部的 Log 区域
       if(data.lastMsg && data.lastMsg.id !== lastMsgId){
         const log = document.getElementById("log");
         const div = document.createElement("div");
@@ -202,7 +216,7 @@
         lastMsgId = data.lastMsg.id;
       }
       const isMyTurn = (currentPlayer === myColor);
-      document.getElementById("info").innerHTML = (currentPlayer===0?"【奴隶】":"【贱畜】") + (isMyTurn ? "<br><span class='text-yellow-300'>该你受罚了</span>" : "<br>等待中...");
+      document.getElementById("info").innerHTML = (currentPlayer===0?"【奴隶】":"【贱畜】") + (isMyTurn ? "<br><span class='text-yellow-300'>该你受罚了</span>" : "<br>恶堕中...");
       document.getElementById("rollBtn").disabled = !isMyTurn;
       drawBoard();
     });
