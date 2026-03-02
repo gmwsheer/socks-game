@@ -11,19 +11,22 @@
     body { font-family: 'Courier New', monospace; background: linear-gradient(45deg, #1a0000, #330011); min-height: 100dvh; margin: 0; }
     .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
     
-    /* ✅ 修复：BGM开关随页面滚动，不固定 */
+      /* ✅ 修复：BGM开关改为标准流，不再压字 */
+    #bgm-header {
+      display: flex;
+      justify-content: flex-end;
+      padding: 10px;
+      width: 100%;
+    }
     #bgm-ctrl {
-      position: absolute; 
-      top: 20px; 
-      right: 20px; 
-      z-index: 100;
       background: rgba(0, 0, 0, 0.8); 
       border: 2px solid #db2777;
       color: #ff0080; 
-      padding: 6px 14px; 
+      padding: 5px 12px; 
       border-radius: 20px;
       font-size: 12px; 
       cursor: pointer;
+      box-shadow: 0 0 10px #ff0080;
     }
     
     #board-container { 
