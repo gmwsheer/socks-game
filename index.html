@@ -93,48 +93,49 @@
 <audio id="snd-dice" src="assets/audio/dice.mp3" preload="auto"></audio>
 <audio id="snd-task" src="assets/audio/task.mp3" preload="auto"></audio>
 
-<div class="max-w-4xl mx-auto game-main-container">  
+<div class="max-w-md mx-auto main-layout">
   <div class="text-center mb-8">
-    <h1 class="text-4xl font-black text-pink-600 neon-pink">恶堕臭丝袜洗脑棋</h1>
-    <p class="text-pink-400 mt-2 italic">成为主人的丝袜狗</p>
+    <h1 class="text-3xl font-black text-pink-600 neon-pink">恶堕臭丝袜洗脑棋</h1>
+    <p class="text-pink-400 mt-2 italic text-sm">成为主人的丝袜狗</p>
   </div>
 
-  <div id="connPanel" class="bg-black/80 border-4 border-pink-600 p-6 rounded-3xl mb-6 shadow-2xl">
+  <div id="connPanel" class="p-6 mb-6 shadow-2xl">
     <div class="flex flex-col gap-4">
       <button onclick="createRoom()" class="btn-xl bg-pink-600 text-white w-full">创建房间（成为丝袜奴隶）</button>
       <div class="flex flex-col gap-2">
-        <input id="joinID" placeholder="输入房号加入调教" class="bg-zinc-900 border-4 border-pink-500 px-6 py-3 text-xl rounded-2xl text-white text-center outline-none">
-        <button onclick="joinRoom()" class="btn-xl bg-pink-500 text-black w-full">加入（成为丝袜贱畜）</button>
+        <input id="joinID" placeholder="输入房号加入调教" class="bg-zinc-900/80 border-2 border-pink-500 px-4 py-3 text-lg rounded-xl text-white text-center outline-none focus:ring-2 focus:ring-pink-300">
+        <button onclick="joinRoom()" class="btn-xl bg-pink-500 text-black w-full active:scale-95">加入（成为丝袜贱畜）</button>
       </div>
     </div>
   </div>
 
   <div id="gameArea" class="hidden space-y-4">
-    <div class="bg-pink-900/40 border-2 border-pink-500 p-2 rounded-2xl text-center">
-      <span class="text-pink-300 text-sm">当前调教房号：</span>
-      <span id="currentIDLabel" class="text-2xl font-mono font-black text-white"></span>
+    <div id="gameArea" class="hidden space-y-4">
+    <div class="p-2 text-center border-pink-900">
+      <span class="text-pink-300 text-xs">当前调教房号：</span>
+     <span id="currentIDLabel" class="text-xl font-mono font-black text-white"></span>
     </div>
-
+    
     <div id="board-container">
       <canvas id="board"></canvas>
       <div id="board-gif-overlay"></div>
     </div>
-
-    <div id="info" class="bg-black/80 border-4 border-pink-500 p-4 rounded-2xl text-center text-xl font-black">等待同步...</div>
+    
+    <div id="info" class="p-4 text-center text-lg font-black border-2 border-pink-500">正在入侵你的脑子...</div>
     
     <div class="flex gap-2">
-      <button onclick="rollDice()" id="rollBtn" class="flex-[2] bg-pink-600 text-white text-2xl font-black py-4 rounded-2xl shadow-lg active:scale-95 disabled:opacity-50">恶堕吧</button>
-      <button onclick="resetGame()" class="flex-1 bg-zinc-800 text-white rounded-2xl text-sm">清空大脑</button>
+      <button onclick="rollDice()" id="rollBtn" class="flex-[2] bg-pink-600 text-white text-xl font-black py-4 rounded-xl shadow-lg active:scale-95 disabled:opacity-50">恶堕吧</button>
+      <button onclick="resetGame()" class="flex-1 bg-zinc-800 text-white rounded-xl text-xs">清空大脑</button>
     </div>
-
-    <div id="log" class="bg-black/90 border-2 border-pink-900 p-4 rounded-xl h-40 overflow-y-auto font-mono text-sm text-pink-300"></div>
+    
+    <div id="log" class="p-4 h-36 overflow-y-auto font-mono text-xs text-pink-300 border-2 border-pink-900"></div>
   </div>
 </div>
 
-<div id="task" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4">
-  <div class="bg-zinc-950 border-[10px] border-pink-600 w-full max-w-2xl rounded-[40px] p-8 text-center shadow-[0_0_100px_#ff0080]">
+<div id="task" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-6">
+  <div class="bg-zinc-950 border-[8px] border-pink-600 w-full max-w-sm rounded-[40px] p-8 text-center shadow-[0_0_60px_#ff0080]">
     <div id="task-text" class="text-xl leading-relaxed text-pink-100 mb-8 font-bold"></div>
-    <button onclick="closeTask()" class="w-full bg-pink-600 text-white text-xl font-black py-4 rounded-2xl">遵命，主人</button>
+    <button onclick="closeTask()" class="w-full bg-pink-600 text-white font-black py-4 rounded-2xl">遵命，主人</button>
   </div>
 </div>
 
@@ -199,7 +200,7 @@
     enterUI();
   }
 
- function enterUI(){
+  function enterUI(){
     document.getElementById("connPanel").classList.add("hidden");
     document.getElementById("gameArea").classList.remove("hidden");
     roomRef.on("value", (snap) => {
@@ -215,8 +216,9 @@
         log.prepend(div);
         lastMsgId = data.lastMsg.id;
       }
+
       const isMyTurn = (currentPlayer === myColor);
-      document.getElementById("info").innerHTML = (currentPlayer===0?"【奴隶】":"【贱畜】") + (isMyTurn ? "<br><span class='text-yellow-300'>该你受罚了</span>" : "<br>恶堕中...");
+      document.getElementById("info").innerHTML = (currentPlayer===0?"【奴隶】":"【贱畜】") + (isMyTurn ? "<br><span class='text-yellow-300'>该你了</span>" : "<br>等待...");
       document.getElementById("rollBtn").disabled = !isMyTurn;
       drawBoard();
     });
@@ -225,22 +227,23 @@
   function rollDice(){
     document.getElementById("snd-dice").play().catch(()=>{});
     const d = Math.floor(Math.random()*6)+1;
-    positions[currentPlayer] += d;
-    if(positions[currentPlayer] >= maxPos) positions[currentPlayer] = maxPos;
+    let newPos = positions[currentPlayer] + d;
+    if(newPos >= maxPos) newPos = maxPos;
     
-    // ✅ 修复：获取任务文字并同步更新 Log
-    const taskText = tasks[positions[currentPlayer]] || "继续接受调教";
-    const role = currentPlayer === 0 ? "【奴隶】" : "【贱畜】";
-    const msg = `${role} 掷出 ${d} 点，到达第 ${positions[currentPlayer]} 格：${taskText}`;
+    positions[currentPlayer] = newPos;
+    // 获取具体任务文字并拼接到 Log 消息中
+    const taskTxt = tasks[newPos] || "继续前进";
+    const roleName = currentPlayer === 0 ? "【奴隶】" : "【贱畜】";
+    const fullMsg = `${roleName} 掷出 ${d} 点 -> ${taskTxt}`;
     
     roomRef.update({ 
       positions, 
       currentPlayer: (currentPlayer===0?1:0),
-      lastMsg: { id: Date.now(), text: msg }
+      lastMsg: { id: Date.now(), text: fullMsg }
     });
     
-    // ✅ 修复：弹出任务窗文字显示
-    document.getElementById("task-text").innerText = taskText;
+    // 弹窗显示文字
+    document.getElementById("task-text").innerText = taskTxt;
     document.getElementById("task").classList.remove("hidden");
     document.getElementById("snd-task").play().catch(()=>{});
   }
@@ -255,9 +258,9 @@
       let row = Math.floor(i / cols), col = i % cols;
       if(row % 2 !== 0) col = (cols - 1) - col;
       const x = col * size, y = (cols - 1 - row) * size;
-      ctx.strokeStyle = "#333"; ctx.strokeRect(x, y, size, size);
+      ctx.strokeStyle = "#444"; ctx.strokeRect(x, y, size, size);
       if(positions[0] === i) { ctx.fillStyle = "red"; ctx.beginPath(); ctx.arc(x+size/2-5, y+size/2, 10, 0, Math.PI*2); ctx.fill(); }
-      if(positions[1] === i) { ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(x+size/2+5, y+size/2, 6, 0, Math.PI*2); ctx.fill(); }
+      if(positions[1] === i) { ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(x+size/2+5, y+size/2, 8, 0, Math.PI*2); ctx.fill(); }
     }
   }
 
@@ -266,4 +269,3 @@
 </script>
 </body>
 </html>
-
