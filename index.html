@@ -8,35 +8,86 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 <style>
-      /* ✅ 1. 背景路径修复与半透明背景设置 */
+    /* ✅ 1. 基础兜底样式（防止 Tailwind 加载失败导致全黑或全乱） */
+    :root {
+      --neon-pink: #ff0080;
+      --main-green: #bef264;
+    }
+    
     html, body {
       margin: 0;
       padding: 0;
       min-height: 100vh;
-      background-color: #000000; /* 纯黑底色，搭配半透明图片效果更好 */
-      color: #bef264;
-      font-family: 'Courier New', monospace;
-      position: relative;
-      z-index: 0;
+      background-color: #0d000d; /* 纯黑底色兜底 */
+      color: var(--main-green);
+      font-family: 'Courier New', monospace, "Microsoft YaHei";
+      overflow-x: hidden;
     }
 
-    /* 使用伪元素添加你上传的螺旋图片作为半透明背景 */
+    /* ✅ 2. 半透明背景层 (使用 ::before 避免影响文字) */
     body::before {
       content: "";
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      /* 👇 请将这里的路径替换为你保存这张螺旋图片的实际路径 */
-      background: url('assets/images/spiral-bg.jpg') no-repeat center center;
+      top: 0; left: 0; width: 100%; height: 100%;
+      /* 如果你没有 bg.jpg，它会显示深紫色 */
+      background: #1a001a url('assets/images/bg.jpg') no-repeat center center;
       background-size: cover;
-      opacity: 0.4; /* 🌟 核心：调整这个数值改变透明度 (0.1 很淡 - 0.9 很清晰) */
-      z-index: -1; /* 确保背景在最底层 */
-      pointer-events: none; /* 防止背景层阻挡按钮点击 */
+      opacity: 0.5; /* 调整这里的数值控制背景透明度 */
+      z-index: -1;
     }
 
-<body class="p-4">
+    /* ✅ 3. 核心布局补丁 */
+    .hidden { display: none !important; } /* 强制隐藏，不依赖外部库 */
+
+    #bgm-header {
+      position: fixed; top: 15px; right: 15px; z-index: 9999;
+    }
+    #bgm-ctrl {
+      background: rgba(0, 0, 0, 0.85);
+      border: 2px solid var(--neon-pink);
+      color: var(--neon-pink);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--neon-pink);
+    }
+
+    .main-layout {
+      margin-top: 60px;
+      padding: 0 15px 40px 15px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .neon-pink { text-shadow: 0 0 15px var(--neon-pink), 0 0 30px var(--neon-pink); }
+    
+    #connPanel, #gameArea > div, #log {
+      background-color: rgba(0, 0, 0, 0.7) !important;
+      border: 2px solid #db2777 !important;
+      backdrop-filter: blur(8px);
+      border-radius: 1.5rem;
+    }
+
+    #board-container { 
+      position: relative; width: 100%; max-width: 500px; aspect-ratio: 1 / 1; 
+      margin: 0 auto; border: 4px solid #db2777;
+      box-shadow: 0 0 20px var(--neon-pink); background: rgba(0,0,0,0.4);
+    }
+    #board { width: 100%; height: 100%; display: block; }
+    
+    /* 螺旋遮罩效果 */
+    #board-gif-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: url('assets/images/mask.gif') center/cover no-repeat;
+      opacity: 0.3; pointer-events: none; z-index: 5;
+    }
+
+    .btn-xl { padding: 1rem; font-size: 1.25rem; font-weight: 900; border-radius: 1rem; cursor: pointer; transition: 0.3s; }
+    .btn-xl:active { transform: scale(0.95); }
+  </style>
+</head>
+<body>
 
 <div id="bgm-header">
   <div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
@@ -92,6 +143,7 @@
 </div>
 
 <script>
+  // ✅ 请确保此处的 Firebase 配置正确
   const firebaseConfig = {
     apiKey: "AIzaSyCzuqADikKXCOKtQXoiVkGRjPiceY-HVDk",
     authDomain: "swsgfxq-game.firebaseapp.com",
@@ -101,8 +153,18 @@
     messagingSenderId: "591308485557",
     appId: "1:591308485557:web:045018427b5e90076f9ffc"
   };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+
+  // 容错初始化
+  let db = null;
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    db = firebase.database();
+  } catch (e) {
+    console.error("Firebase 加载失败，请检查网络:", e);
+    alert("无法连接服务器，请检查是否被墙或配置错误。");
+  }
 
   // 恢复原始 V5 任务文字
   const tasks = {
