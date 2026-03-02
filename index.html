@@ -7,90 +7,91 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script> 
-      <style>
-    /* ✅ 1. 背景半透明处理 */
+        <style>
+    /* 核心背景：半透明设置 */
     body {
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      background-color: #0e000e; /* 底色：深黑色 */
-      color: #bef264;
+      margin: 0; padding: 0; min-height: 100vh;
+      background-color: #0e000e; color: #bef264;
       font-family: 'Courier New', monospace;
-      position: relative;
+      position: relative; overflow-x: hidden;
     }
-
-    /* 使用伪元素承载背景图，实现半透明 */
     body::before {
-      content: "";
-      position: fixed; /* 背景本身依然铺满窗口 */
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: url('assets/images/bg.jpg') no-repeat center center;
-      background-size: cover;
-      opacity: 0.35; /* 透明度：0.35 表示 35% 的亮度，让背景变暗、变虚 */
-      z-index: -1; /* 确保在所有内容后方 */
+      background-size: cover; opacity: 0.35; z-index: -1;
     }
 
-    /* ✅ 2. BGM按钮：改为 absolute，随页面滚动而滚走 */
+    /* ✅ 修复1：BGM按钮位置，不再跟随页面，不压标题 */
     #bgm-header {
-      position: absolute !important; /* 关键：不再悬浮在窗口右上角 */
-      top: 15px !important;
-      right: 15px !important;
-      z-index: 100000;
-      width: auto !important;
+      position: fixed !important;
+      top: 12px !important;
+      right: 12px !important;
+      z-index: 99999;
     }
-    
     #bgm-ctrl {
       display: inline-flex !important;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.6) !important; /* 按钮背景更透一点 */
-      border: 2px solid #ff0080 !important;
+      background: rgba(0, 0, 0, 0.8) !important;
+      border: 1.5px solid #ff0080 !important;
       color: #ff0080 !important;
-      padding: 5px 12px !important;
+      padding: 4px 10px !important;
       border-radius: 20px !important;
-      font-size: 11px !important;
+      font-size: 10px !important;
       font-weight: bold;
-      box-shadow: 0 0 10px rgba(255, 0, 128, 0.4);
-      cursor: pointer;
-      white-space: nowrap !important;
+      box-shadow: 0 0 12px rgba(255, 0, 128, 0.6);
     }
 
-    /* 布局避让 */
+    /* 布局容器调整 */
     .main-layout {
-      margin-top: 80px !important; 
-      padding: 0 15px 40px 15px;
-      position: relative;
-      z-index: 1;
+      margin-top: 50px !important; /* 给标题留出空间，不被BGM遮挡 */
+      padding: 0 16px 40px 16px !important;
     }
-
     .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
     
+    /* 统一面板样式 */
     #connPanel, #gameArea > div, #log {
-      background-color: rgba(0, 0, 0, 0.7) !important; /* 面板透明度微调 */
+      background-color: rgba(0, 0, 0, 0.75) !important;
       border: 2px solid #db2777 !important;
-      backdrop-filter: blur(8px); /* 增加模糊感，看起来更高级 */
-      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
       border-radius: 1.5rem;
+      overflow: hidden; /* 防止内部元素溢出 */
     }
 
+    /* 棋盘容器 */
     #board-container { 
       position: relative; width: 100%; max-width: 500px; aspect-ratio: 1 / 1; 
       margin: 0 auto; border-radius: 1.5rem; border: 4px solid #db2777;
-      box-shadow: 0 0 30px #ff0080; overflow: hidden;
-      background: rgba(0,0,0,0.3); 
+      box-shadow: 0 0 25px #ff0080; overflow: hidden; background: rgba(0,0,0,0.3); 
     }
     #board { width: 100%; height: 100%; display: block; position: relative; z-index: 10; }
-    #board-gif-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: url('assets/images/mask.gif') center/cover no-repeat;
-      opacity: 0.3; pointer-events: none; z-index: 5;
+    
+    /* ✅ 修复2：底部按钮样式调整，绝不溢出 */
+    .game-btns-container {
+      display: flex !important;
+      gap: 10px !important;
+      width: 100% !important;
+      padding: 0 2px !important;
     }
-    .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.25rem; }
+    .btn-responsive {
+      flex: 1;
+      height: 60px !important; /* 固定高度，防止被撑大 */
+      font-size: 1.2rem !important;
+      font-weight: 900;
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s;
+      white-space: nowrap;
+      border: none;
+    }
+    /* 调整“清空大脑”较小字号 */
+    .btn-small-text { font-size: 0.85rem !important; }
+    
+    #log { height: 110px !important; font-size: 11px !important; margin-top: 15px !important; }
   </style>
 </head>
-<body>
+<body class="p-0">
 
 <div id="bgm-header">
   <div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
