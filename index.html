@@ -30,6 +30,8 @@
   </style>
 </head>
 <body class="text-lime-300 p-4">
+  <audio id="snd-dice" src="assets/audio/dice.mp3" preload="auto"></audio>
+<audio id="snd-task" src="assets/audio/task.mp3" preload="auto"></audio>
 <div class="max-w-4xl mx-auto">
   <div class="text-center mb-6">
     <h1 class="text-4xl font-black text-pink-600 neon-pink">老子臭丝袜飞行棋</h1>
@@ -38,10 +40,10 @@
 
   <div id="connPanel" class="bg-black/80 border-4 border-pink-600 p-6 rounded-3xl mb-6">
     <div class="flex flex-col gap-4 justify-center items-center">
-      <button onclick="createRoom()" class="btn-xl bg-pink-600 text-white w-full">创建房间（成为丝袜主人）</button>
+      <button onclick="createRoom()" class="btn-xl bg-pink-600 text-white w-full">创建房间（成为丝袜伪主）</button>
       <div class="flex flex-col gap-2 w-full">
         <input id="joinID" placeholder="输入房号加入调教" class="bg-zinc-900 border-4 border-pink-500 px-6 py-3 text-xl rounded-2xl text-white outline-none">
-        <button onclick="joinRoom()" class="btn-xl bg-pink-500 text-black w-full">加入当丝袜奴隶</button>
+        <button onclick="joinRoom()" class="btn-xl bg-pink-500 text-black w-full">加入（成为丝袜贱畜）</button>
       </div>
     </div>
   </div>
@@ -207,24 +209,28 @@
   }
 
   function rollDice(){
-    const d = Math.floor(Math.random()*6)+1;
-    const pName = myColor === 0 ? "主人" : "贱狗";
-    positions[currentPlayer] += d;
-    if(positions[currentPlayer] >= maxPos) positions[currentPlayer] = maxPos;
-    
-    const taskContent = tasks[positions[currentPlayer]];
-    const msgText = `${pName} 掷出 ${d}点，停留在 ${positions[currentPlayer]}格：${taskContent}`;
-    
-    // 自己端弹窗
-    showTask(positions[currentPlayer]);
+  // 触发掷骰子音效
+  const diceSnd = document.getElementById("snd-dice");
+  if(diceSnd) diceSnd.play().catch(()=>{});
 
-    // 同步给数据库
-    roomRef.update({ 
-      positions: positions, 
-      currentPlayer: (currentPlayer === 0 ? 1 : 0),
-      lastMsg: { id: Date.now(), text: msgText, isMaster: (myColor===0) }
-    });
-  }
+  const d = Math.floor(Math.random()*6)+1;
+  const pName = myColor === 0 ? "主人" : "贱狗";
+  positions[currentPlayer] += d;
+  if(positions[currentPlayer] >= maxPos) positions[currentPlayer] = maxPos;
+  
+  const taskContent = tasks[positions[currentPlayer]];
+  const msgText = `${pName} 掷出 ${d}点，抵达 ${positions[currentPlayer]}格：${taskContent}`;
+  
+  // 自己端弹出任务窗口
+  showTask(positions[currentPlayer]);
+
+  // 同步到数据库
+  roomRef.update({ 
+    positions: positions, 
+    currentPlayer: (currentPlayer === 0 ? 1 : 0),
+    lastMsg: { id: Date.now(), text: msgText, isMaster: (myColor===0) }
+  });
+}
 
   function sendQuickMsg(txt){
     if(!roomRef) return;
