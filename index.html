@@ -40,27 +40,29 @@
             margin-bottom: 1rem; padding: 1rem;
         }
 
-   /* 4. 棋盘容器 */
+ /* 4. 棋盘容器 */
 #board-container { 
     position: relative; width: 100%; max-width: 450px; aspect-ratio: 1/1; 
     margin: 0 auto; border: 4px solid #db2777; border-radius: 1.5rem;
-    overflow: hidden; background: #000; /* 容器底色保持黑色 */
+    overflow: hidden; 
+    background-color: #000; /* 底色黑色 */
 }
 
-/* 画布层：必须完全透明 */
+/* 遮罩层：确保背景图有宽高并置于底层 */
+#board-mask {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; 
+    z-index: 1; /* 放在最底层 */
+    background: url('https://raw.githubusercontent.com/gmwsheer/socks-game/main/assets/images/mask.gif') center/cover no-repeat;
+    opacity: 0.6; /* 提高一点透明度看看效果 */
+}
+
+/* 画布层：盖在背景图上面 */
 #board { 
     width: 100%; height: 100%; 
     position: absolute; top: 0; left: 0; 
     z-index: 10; 
     background: transparent !important; 
-}
-
-/* 遮罩层：把背景图放在这里，并设置半透明 */
-#board-mask {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: 5; /* 放在画布下面 */
-    background: url('https://raw.githubusercontent.com/gmwsheer/socks-game/main/assets/images/mask.gif') center/cover no-repeat;
-    opacity: 0.5; /* 调整这个数值控制背景图的清晰度 (0.1-1.0) */
 }
 
 
@@ -96,18 +98,16 @@
             <button onclick="joinRoom()" class="w-full py-4 bg-pink-500 text-black rounded-2xl text-xl font-black"> 加入（成为丝袜贱畜） </button>
         </div>
 
-        <div id="gameArea" class="hidden">
+                <div id="gameArea" class="hidden">
             <div class="glass-panel text-center py-2">
                 <span class="text-pink-300 text-xs">调教房号：</span>
                 <span id="currentIDLabel" class="text-white font-bold"></span>
-            </div>
 
-         <div id="board-container">
-    <div id="board-mask"></div> <canvas id="board"></canvas> </div>
-</div>
+            <div id="board-container">
+                <div id="board-mask"></div> 
+                <canvas id="board"></canvas> 
+            </div> <div id="info" class="glass-panel text-center font-black text-lg py-3 mt-4"> 正在侵入你的大脑...</div>
 
-
-            <div id="info" class="glass-panel text-center font-black text-lg py-3 mt-4"> 正在侵入你的大脑...</div>
 
             <div class="btn-group">
                 <button onclick="rollDice()" id="rollBtn" class="btn-main active:scale-95 disabled:opacity-50">恶堕吧</button>
