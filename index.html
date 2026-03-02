@@ -40,30 +40,28 @@
             margin-bottom: 1rem; padding: 1rem;
         }
 
-        /* 4. 棋盘容器 */
+   /* 4. 棋盘容器 */
 #board-container { 
     position: relative; width: 100%; max-width: 450px; aspect-ratio: 1/1; 
     margin: 0 auto; border: 4px solid #db2777; border-radius: 1.5rem;
-    overflow: hidden; 
-    /* 将背景直接设在容器上，透过 Canvas 看到它 */
-    background: url('https://raw.githubusercontent.com/gmwsheer/socks-game/main/assets/images/mask.gif') center/cover no-repeat;
+    overflow: hidden; background: #000; /* 容器底色保持黑色 */
 }
 
-/* 让画布透明，这样才能看到底下的背景图 */
+/* 画布层：必须完全透明 */
 #board { 
     width: 100%; height: 100%; 
     position: absolute; top: 0; left: 0; 
     z-index: 10; 
-    background: rgba(0, 0, 0, 0.5); /* 这里的 0.5 就是棋盘遮罩的透明度，越小背景越亮 */
+    background: transparent !important; 
 }
 
-/* 遮罩层（可选：如果你想在棋盘上方再压一层半透明） */
+/* 遮罩层：把背景图放在这里，并设置半透明 */
 #board-mask {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: 20;
-    background: rgba(0, 0, 0, 0.2); 
+    pointer-events: none; z-index: 5; /* 放在画布下面 */
+    background: url('https://raw.githubusercontent.com/gmwsheer/socks-game/main/assets/images/mask.gif') center/cover no-repeat;
+    opacity: 0.5; /* 调整这个数值控制背景图的清晰度 (0.1-1.0) */
 }
-
 
 
         /* 5. 底部按钮修复：严禁溢出，找回丢失的按钮样式 */
@@ -104,9 +102,8 @@
                 <span id="currentIDLabel" class="text-white font-bold"></span>
             </div>
 
-            <div id="board-container">
-    <canvas id="board"></canvas>
-    <div id="board-mask"></div> 
+         <div id="board-container">
+    <div id="board-mask"></div> <canvas id="board"></canvas> </div>
 </div>
 
 
@@ -229,10 +226,13 @@
 
   function closeTask(){ document.getElementById("task").classList.add("hidden"); }
   
-  function drawBoard(){
+    function drawBoard(){
     canvas.width = canvas.clientWidth; canvas.height = canvas.clientWidth;
     const cols = 7, size = canvas.width / cols;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // 确保这里只是清除，不要写 ctx.fillStyle = "black"; ctx.fillRect(...)
+    ctx.clearRect(0,0,canvas.width,canvas.height); 
+    
+    // ... 后面的绘图逻辑保持不变 ...
     for(let i=0; i<=maxPos; i++){
       let row = Math.floor(i / cols), col = i % cols;
       if(row % 2 !== 0) col = (cols - 1) - col;
