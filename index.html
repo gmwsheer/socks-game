@@ -9,69 +9,66 @@
   <script src="https://cdn.tailwindcss.com"></script>
 <style>
   /* 1. 背景图路径与固定设置 */
-  html, body {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    background: #1a001a url('assets/images/bg.jpg') no-repeat center center fixed !important;
-    background-size: cover !important;
-    color: #bef264;
-    font-family: 'Courier New', monospace;
-  }
+  body { 
+      font-family: 'Courier New', monospace; 
+      /* 将你的背景图 assets/images/bg.jpg 放在这里 */
+      background: #1a001a url('assets/images/bg.jpg') no-repeat center center fixed !important;
+      background-size: cover !important; /* 覆盖整个屏幕 */
+      min-height: 100vh; 
+      margin: 0; 
+      color: #bef264; 
+      overflow-x: hidden; 
+    }
+    .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
+    
+    /* 1. BGM 按钮定位：彻底变短，固定右上角 */
+    #bgm-header {
+      position: fixed !important;
+      top: 15px !important;
+      right: 15px !important;
+      z-index: 10000; /* 确保在最顶层 */
+      width: auto !important;
+    }
+    #bgm-ctrl {
+      display: inline-flex !important; /* 关键：只包裹文字 */
+      align-items: center;
+      background: rgba(0, 0, 0, 0.85) !important; /* 稍深一点的半透明 */
+      border: 2px solid #db2777;
+      color: #ff0080; 
+      padding: 5px 12px !important; 
+      border-radius: 999px;
+      font-size: 12px; 
+      cursor: pointer;
+      box-shadow: 0 0 10px #ff0080;
+      white-space: nowrap !important;
+    }
+    
+    /* 2. 界面层级：所有的黑色面板改为半透明，以透出背景图 */
+    #connPanel, #gameArea > div, #log {
+      background-color: rgba(0, 0, 0, 0.85) !important; /* 半透明黑 */
+      border-radius: 1.5rem;
+    }
 
-  /* 2. 右上角 BGM 按钮瘦身 */
-  #bgm-header {
-    position: fixed !important;
-    top: 15px !important;
-    right: 15px !important;
-    z-index: 100000;
-    width: auto !important;
-  }
-  #bgm-ctrl {
-    display: inline-flex !important;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.85) !important;
-    border: 2px solid #ff0080 !important;
-    color: #ff0080 !important;
-    padding: 5px 12px !important;
-    border-radius: 20px !important;
-    font-size: 11px !important;
-    box-shadow: 0 0 15px rgba(255, 0, 128, 0.6);
-    white-space: nowrap !important;
-  }
-
-  /* 3. 核心：半透明与毛玻璃效果 */
-  #connPanel, #gameArea > div, #log {
-    background-color: rgba(0, 0, 0, 0.75) !important; /* 0.75就是半透明度 */
-    border: 2px solid #db2777 !important;
-    backdrop-filter: blur(5px); /* 毛玻璃模糊 */
-    -webkit-backdrop-filter: blur(5px);
-    border-radius: 1.5rem;
-  }
-
-  /* 4. 标题向下移动，防止重叠 */
-  .main-layout {
-    margin-top: 80px !important; 
-    padding: 0 15px 40px 15px;
-  }
-
-  .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
-  
-  #board-container { 
-    position: relative; width: 100%; max-width: 500px; aspect-ratio: 1 / 1; 
-    margin: 0 auto; border-radius: 1.5rem; border: 4px solid #db2777;
-    box-shadow: 0 0 30px #ff0080; overflow: hidden;
-    background: rgba(0,0,0,0.5); 
-  }
-  #board { width: 100%; height: 100%; display: block; position: relative; z-index: 10; }
-  #board-gif-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: url('assets/images/mask.gif') center/cover no-repeat;
-    opacity: 0.35; pointer-events: none; z-index: 5;
-  }
-  .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.25rem; }
+    #board-container { 
+      position: relative; 
+      width: 100%; max-width: 600px; aspect-ratio: 1 / 1; 
+      margin: 0 auto; border-radius: 2rem; border: 6px solid #db2777;
+      box-shadow: 0 0 40px #ff0080; overflow: hidden; 
+      background-color: rgba(0, 0, 0, 0.9); /* 棋盘底色稍深 */
+    }
+    #board { width: 100%; height: 100%; display: block; position: relative; z-index: 10; }
+    
+    /* 这是棋盘上的 GIF 遮罩 */
+    #board-gif-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: url('assets/images/mask.gif') center/cover no-repeat;
+      opacity: 0.35; pointer-events: none; z-index: 5;
+    }
+    
+    .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.5rem; }
+    #task { animation: silkPop 0.3s ease-out; }
+    @keyframes silkPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 </style>
-
 </head>
 <body class="p-4">
 
