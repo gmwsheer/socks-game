@@ -8,71 +8,34 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
 <style>
-  /* 1. 背景图路径与固定设置 */
-   html, body {
+      /* ✅ 1. 背景路径修复与半透明背景设置 */
+    html, body {
       margin: 0;
       padding: 0;
       min-height: 100vh;
-      background: #000 url('assets/images/bg.jpg') no-repeat center center fixed !important;
-      background-size: cover !important;
+      background-color: #000000; /* 纯黑底色，搭配半透明图片效果更好 */
       color: #bef264;
       font-family: 'Courier New', monospace;
+      position: relative;
+      z-index: 0;
     }
 
-    /* 2. BGM 按钮：钉在最右上角，不占空间 */
-    #bgm-header {
-      position: fixed !important;
-      top: 10px !important;
-      right: 10px !important;
-      z-index: 10000;
-      width: auto !important;
-    }
-    #bgm-ctrl {
-      display: inline-flex !important;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.6) !important;
-      border: 1px solid #ff0080 !important;
-      color: #ff0080 !important;
-      padding: 4px 10px !important;
-      border-radius: 20px !important;
-      font-size: 10px !important;
-      font-weight: bold;
-      box-shadow: 0 0 10px rgba(255, 0, 128, 0.5);
-      cursor: pointer;
+    /* 使用伪元素添加你上传的螺旋图片作为半透明背景 */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      /* 👇 请将这里的路径替换为你保存这张螺旋图片的实际路径 */
+      background: url('assets/images/spiral-bg.jpg') no-repeat center center;
+      background-size: cover;
+      opacity: 0.4; /* 🌟 核心：调整这个数值改变透明度 (0.1 很淡 - 0.9 很清晰) */
+      z-index: -1; /* 确保背景在最底层 */
+      pointer-events: none; /* 防止背景层阻挡按钮点击 */
     }
 
-    /* 3. 布局偏移修复：加大顶部间距，彻底避开 BGM 按钮 */
-    .main-layout {
-      margin-top: 110px !important; /* 增加到 110px，防止标题被盖住 */
-      padding: 0 16px 40px 16px;
-    }
-
-    .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
-    
-    /* 4. 半透明面板：大幅降低透明度 (0.4) 并增强模糊 (12px) */
-    #connPanel, #gameArea > div, #log {
-      background-color: rgba(0, 0, 0, 0.4) !important; /* 极高透明度 */
-      border: 2px solid rgba(219, 39, 119, 0.5) !important; /* 边框也做成半透明 */
-      backdrop-filter: blur(12px) !important; /* 强力模糊，透出背景色块 */
-      -webkit-backdrop-filter: blur(12px) !important;
-      border-radius: 1.5rem;
-    }
-
-    #board-container { 
-      position: relative; width: 100%; max-width: 500px; aspect-ratio: 1 / 1; 
-      margin: 0 auto; border-radius: 1.5rem; border: 4px solid #db2777;
-      box-shadow: 0 0 30px #ff0080; overflow: hidden; background: rgba(0,0,0,0.3);
-    }
-    #board { width: 100%; height: 100%; display: block; position: relative; z-index: 10; }
-    #board-gif-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: url('assets/images/mask.gif') center/cover no-repeat;
-      opacity: 0.3; pointer-events: none; z-index: 5;
-    }
-    .btn-xl { padding: 1.25rem; font-size: 1.25rem; font-weight: 900; border-radius: 1.25rem; }
-  </style>
-</head>
-<body>
 <body class="p-4">
 
 <div id="bgm-header">
