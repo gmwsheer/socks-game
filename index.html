@@ -7,6 +7,22 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+     /* BGM 控制按钮样式 */
+    #bgm-ctrl {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #db2777;
+      color: #ff0080;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ff0080;
+    }
+
   <style>
     body { font-family: 'Courier New', monospace; background: linear-gradient(45deg, #1a0000, #330011); min-height: 100dvh; margin: 0; overscroll-behavior: none; }
     .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
@@ -19,14 +35,15 @@
   </style>
 </head>
 <body class="text-lime-300 p-4">
-
+<audio id="snd-bgm" src="assets/audio/bgm.mp3" loop></audio>
+<div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
 <audio id="snd-dice" src="assets/audio/dice.mp3" preload="auto"></audio>
 <audio id="snd-task" src="assets/audio/task.mp3" preload="auto"></audio>
 
 <div class="max-w-4xl mx-auto">
   <div class="text-center mb-6">
-    <h1 class="text-4xl font-black text-pink-600 neon-pink">主人的臭丝袜洗脑棋</h1>
-    <p class="text-pink-400 mt-2">成为主人的丝袜贱畜吧</p>
+    <h1 class="text-4xl font-black text-pink-600 neon-pink">恶堕臭丝袜洗脑棋</h1>
+    <p class="text-pink-400 mt-2">成为主人的丝袜狗</p>
   </div>
 
   <div id="connPanel" class="bg-black/80 border-4 border-pink-600 p-6 rounded-3xl mb-6">
@@ -110,12 +127,20 @@
   const maxPos = 44, canvas = document.getElementById('board'), ctx = canvas.getContext('2d');
 
   // 新增：解锁手机音效的逻辑
-  function unlockAudio() {
+    function unlockAudio() {
     const dice = document.getElementById("snd-dice");
     const task = document.getElementById("snd-task");
-    if(dice) dice.play().then(() => dice.pause()).catch(() => {});
-    if(task) task.play().then(() => task.pause()).catch(() => {});
+    const bgm = document.getElementById("snd-bgm");
+    
+    // 解锁所有音效
+    [dice, task, bgm].forEach(a => {
+      if(a) a.play().then(() => {
+        // 背景音乐解锁后先暂停，等待开关控制，或直接开始播放
+        if(a.id !== 'snd-bgm') a.pause(); 
+      }).catch(() => {});
+    });
   }
+
 
   function log(msg, isMaster = false){
     const logBox = document.getElementById("log");
@@ -229,6 +254,23 @@
     if(confirm("重置所有进度？")) {
       roomRef.set({ positions: [0,0], currentPlayer: 0, lastMsg: { id: Date.now(), text: "🔄 游戏重置，重新开始调教！", isMaster: true } });
       drawBoard();
+    }
+  }
+  function toggleBGM() {
+    const bgm = document.getElementById("snd-bgm");
+    const btn = document.getElementById("bgm-ctrl");
+    if (bgm.paused) {
+      bgm.play();
+      btn.innerText = "🎵 BGM: ON";
+      btn.style.color = "#00ffff";
+      btn.style.boxShadow = "0 0 10px #00ffff";
+      btn.style.borderColor = "#00ffff";
+    } else {
+      bgm.pause();
+      btn.innerText = "🎵 BGM: OFF";
+      btn.style.color = "#ff0080";
+      btn.style.boxShadow = "0 0 10px #ff0080";
+      btn.style.borderColor = "#db2777";
     }
   }
 
