@@ -8,14 +8,41 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
    
-  <style>
-     body { font-family: 'Courier New', monospace; background: linear-gradient(45deg, #1a0000, #330011); min-height: 100dvh; margin: 0; overscroll-behavior: none; }
+<style>
+    body { font-family: 'Courier New', monospace; background: linear-gradient(45deg, #1a0000, #330011); min-height: 100dvh; margin: 0; overscroll-behavior: none; }
     .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
-    #board-container { position: relative; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; margin: 0 auto; }
-    #board { background: rgba(0,0,0,0.9); border-radius: 2rem; border: 6px solid #db2777; width: 100%; height: 100%; box-shadow: 0 0 50px #ff0080; }
+    
+    /* 棋盘容器 */
+    #board-container { 
+      position: relative; 
+      width: 100%; 
+      max-width: 600px; 
+      aspect-ratio: 1 / 1; 
+      margin: 0 auto; 
+      border-radius: 2rem;
+      border: 6px solid #db2777;
+      box-shadow: 0 0 50px #ff0080;
+      overflow: hidden; /* 确保GIF不超出圆角 */
+    }
+    #board { background: rgba(0,0,0,0.9); width: 100%; height: 100%; display: block; }
+
+    /* ✅ GIF 半透明遮罩层 */
+    #board-gif-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      /* 替换下方的 URL 为你的 GIF 地址 */
+      background: url('你的GIF图片地址') center/cover no-repeat;
+      opacity: 0.3; /* 透明度，越小越淡 */
+      pointer-events: none; /* ❗关键：允许点击穿透到下方的棋盘 */
+      z-index: 5;
+    }
+
     .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.5rem; transition: all 0.2s; }
     
-    /* BGM 按钮：增加半透明毛玻璃效果，更高级 */
+    /* BGM 按钮样式 */
     #bgm-ctrl {
       position: fixed; top: 15px; right: 15px; z-index: 100;
       background: rgba(0, 0, 0, 0.7); border: 2px solid #db2777;
@@ -25,12 +52,11 @@
     }
     #task { animation: silkPop 0.4s ease-out; }
     @keyframes silkPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    .msg-master { color: #ff0080; font-weight: bold; border-left: 4px solid #ff0080; padding-left: 8px; margin-bottom: 4px; }
   </style>
 </head>
 <body class="text-lime-300 p-4">
 
-<audio id="snd-bgm" src="assets/audio/bgm.mp3" loop></audio>
+<audio id="snd-bgm" src="assets/audio/bgm.mp3" loop preload="auto"></audio>
 <audio id="snd-dice" src="assets/audio/dice.mp3" preload="auto"></audio>
 <audio id="snd-task" src="assets/audio/task.mp3" preload="auto"></audio>
 
@@ -122,62 +148,53 @@
   let myColor = -1, positions = [0, 0], currentPlayer = 0, lastMsgId = "", roomRef = null;
   const maxPos = 44, canvas = document.getElementById('board'), ctx = canvas.getContext('2d');
 
-  // 新增：解锁手机音效的逻辑
-    function unlockAudio() {
+ // ✅ 修正：确保点击时同时解锁所有音频权限
+  function unlockAudio() {
+    const bgm = document.getElementById("snd-bgm");
     const dice = document.getElementById("snd-dice");
     const task = document.getElementById("snd-task");
-    const bgm = document.getElementById("snd-bgm");
     
-    // 解锁所有音效
-    [dice, task, bgm].forEach(a => {
-      if(a) a.play().then(() => {
-        // 背景音乐解锁后先暂停，等待开关控制，或直接开始播放
-        if(a.id !== 'snd-bgm') a.pause(); 
-      }).catch(() => {});
+    [bgm, dice, task].forEach(a => {
+      a.play().then(() => {
+        if(a.id !== 'snd-bgm') a.pause(); // 除BGM外解锁后立即暂停
+      }).catch(e => console.log("Unlock check:", e));
     });
   }
 
-
-  function log(msg, isMaster = false){
-    const logBox = document.getElementById("log");
-    const div = document.createElement("div");
-    if(isMaster) div.className = "msg-master";
-    div.innerHTML = `> ${msg}`;
-    logBox.appendChild(div);
-    logBox.scrollTop = logBox.scrollHeight;
-  }
-
-  function drawBoard(){
-    if(canvas.width !== canvas.clientWidth) { canvas.width = canvas.clientWidth; canvas.height = canvas.clientWidth; }
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    const cols = 7, size = canvas.width / cols;
-    for(let i=0; i<=maxPos; i++){
-      let row = Math.floor(i / cols), col = i % cols;
-      if(row % 2 !== 0) col = (cols - 1) - col;
-      const x = col * size, y = (cols - 1 - row) * size;
-      ctx.strokeStyle = "#444"; ctx.strokeRect(x, y, size, size);
-      if(positions[0] === i) { ctx.fillStyle = "red"; ctx.beginPath(); ctx.arc(x+size/3, y+size/2, 8, 0, Math.PI*2); ctx.fill(); }
-      if(positions[1] === i) { ctx.fillStyle = "#00ffff"; ctx.beginPath(); ctx.arc(x+size*2/3, y+size/2, 8, 0, Math.PI*2); ctx.fill(); }
+  // ✅ 修正：BGM 切换逻辑
+  function toggleBGM() {
+    const bgm = document.getElementById("snd-bgm");
+    const btn = document.getElementById("bgm-ctrl");
+    
+    if (bgm.paused) {
+      bgm.play().then(() => {
+        btn.innerText = "🎵 BGM: ON";
+        btn.style.color = "#00ffff";
+        btn.style.borderColor = "#00ffff";
+      }).catch(err => {
+        alert("请先点击'进入房间'以授权播放声音");
+      });
+    } else {
+      bgm.pause();
+      btn.innerText = "🎵 BGM: OFF";
+      btn.style.color = "#ff0080";
+      btn.style.borderColor = "#db2777";
     }
   }
 
   function createRoom(){
-    unlockAudio(); // 点击瞬间解锁音效
+    unlockAudio(); // ❗必须在点击事件的第一行执行
     const id = Math.random().toString(36).substring(2,8).toUpperCase();
     roomRef = db.ref("rooms/"+id); myColor = 0;
-    roomRef.set({ positions:[0,0], currentPlayer:0, lastMsg: {id: Date.now(), text: "主人已降临，跪下！", isAlert: false} });
-    document.getElementById("currentIDLabel").innerText = id;
-    setupSync();
+    roomRef.set({ positions:[0,0], currentPlayer:0, lastMsg: {id: Date.now(), text: "统治者已降临"} });
+    document.getElementById("currentIDLabel").innerText = id; setupSync();
   }
 
   function joinRoom(){
-    unlockAudio(); // 点击瞬间解锁音效
-    const id = document.getElementById("joinID").value.trim().toUpperCase();
-    if(!id) return alert("请输入房号");
+    unlockAudio(); // ❗必须在点击事件的第一行执行
+    const id = document.getElementById("joinID").value.trim().toUpperCase(); if(!id) return;
     roomRef = db.ref("rooms/"+id); myColor = 1;
-    document.getElementById("currentIDLabel").innerText = id;
-    setupSync();
-    roomRef.child("lastMsg").set({id: Date.now(), text: "贱狗已爬进房间，请调教！", isAlert: false});
+    document.getElementById("currentIDLabel").innerText = id; setupSync();
   }
 
   function setupSync(){
@@ -199,7 +216,7 @@
       document.getElementById("rollBtn").disabled = !isMyTurn;
       drawBoard();
     });
-  }
+  
 
   function rollDice(){
     // 增加掷骰子音效
