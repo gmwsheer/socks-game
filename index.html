@@ -14,21 +14,21 @@
             font-family: 'Courier New', monospace;
             position: relative; 
         }
-        /* 背景图半透明 */
+        /* 全局背景图 */
         body::before {
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: url('assets/images/bg.jpg') no-repeat center center;
             background-size: cover; opacity: 0.35; z-index: -1;
         }
 
-        /* ✅ 修正1：BGM按钮不再跟随屏幕，且不压标题 */
+        /* BGM 按钮：随页面滚动，位于标题右上角 */
         .header-container {
-            position: relative; /* 关键：作为BGM定位的基准 */
+            position: relative; 
             padding-top: 50px;
             text-align: center;
         }
         #bgm-header {
-            position: absolute !important; /* 改为绝对定位，随页面滚动 */
+            position: absolute !important; 
             top: 10px !important;
             right: 15px !important;
             z-index: 50;
@@ -45,7 +45,6 @@
 
         .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
 
-        /* 面板统一样式 */
         .glass-panel {
             background-color: rgba(0, 0, 0, 0.7) !important;
             border: 2px solid #db2777 !important;
@@ -55,14 +54,26 @@
             padding: 1rem;
         }
 
+        /* ✅ 棋盘容器：找回 mask.gif */
         #board-container { 
             position: relative; width: 100%; max-width: 450px; aspect-ratio: 1/1; 
             margin: 0 auto; border: 4px solid #db2777; border-radius: 1.5rem;
             overflow: hidden; background: rgba(0,0,0,0.3);
         }
-        #board { width: 100%; height: 100%; }
+        #board { width: 100%; height: 100%; position: relative; z-index: 1; }
+        
+        /* ✅ 补回棋盘覆盖图 (mask.gif) */
+        #board-mask {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: url('assets/images/mask.gif') center/cover no-repeat;
+            opacity: 0.35; /* 透明度你可以根据喜好微调 */
+            pointer-events: none; /* 确保不挡住棋盘点击 */
+            z-index: 2;
+        }
 
-        /* ✅ 修正2：按钮不再超出边框 */
+        /* 底部按钮：适配边框，不溢出 */
         .btn-group {
             display: flex;
             gap: 8px;
@@ -70,17 +81,17 @@
             margin-top: 10px;
         }
         .btn-main {
-            flex: 2; /* 恶堕吧占大头 */
+            flex: 2;
             background-color: #db2777;
             color: white;
             font-weight: 900;
             border-radius: 1rem;
-            padding: 12px 0; /* 仅上下间距，不撑左右 */
+            padding: 12px 0;
             font-size: 1.2rem;
             text-align: center;
         }
         .btn-sub {
-            flex: 1; /* 清空大脑占小头 */
+            flex: 1;
             background-color: #27272a;
             color: #a1a1aa;
             border-radius: 1rem;
