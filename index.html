@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>老子臭丝袜飞行棋</title>
+  <title>恶堕臭丝袜洗脑棋</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
- <style>
+  <style>
     /* ✅ 1. 背景锁死：强制加载 bg.jpg，即便加载失败也保留深紫渐变底色 */
     html, body {
       margin: 0;
@@ -101,19 +101,18 @@
 
   <div id="connPanel" class="p-6 mb-6 shadow-2xl">
     <div class="flex flex-col gap-4">
-      <button onclick="createRoom()" class="btn-xl bg-pink-600 text-white w-full">创建房间（成为丝袜奴隶）</button>
+      <button onclick="createRoom()" class="btn-xl bg-pink-600 text-white w-full active:scale-95"> 创建房间（成为丝袜奴隶） </button>
       <div class="flex flex-col gap-2">
-        <input id="joinID" placeholder="输入房号加入调教" class="bg-zinc-900/80 border-2 border-pink-500 px-4 py-3 text-lg rounded-xl text-white text-center outline-none focus:ring-2 focus:ring-pink-300">
-        <button onclick="joinRoom()" class="btn-xl bg-pink-500 text-black w-full active:scale-95">加入（成为丝袜贱畜）</button>
+        <input id="joinID" placeholder="输入房号" class="bg-zinc-900/80 border-2 border-pink-500 px-4 py-3 text-lg rounded-xl text-white text-center outline-none focus:ring-2 focus:ring-pink-300">
+        <button onclick="joinRoom()" class="btn-xl bg-pink-500 text-black w-full active:scale-95">加入（成为丝袜贱畜） </button>
       </div>
     </div>
   </div>
 
   <div id="gameArea" class="hidden space-y-4">
-    <div id="gameArea" class="hidden space-y-4">
     <div class="p-2 text-center border-pink-900">
-      <span class="text-pink-300 text-xs">当前调教房号：</span>
-     <span id="currentIDLabel" class="text-xl font-mono font-black text-white"></span>
+      <span class="text-pink-300 text-xs">调教房号：</span>
+      <span id="currentIDLabel" class="text-xl font-mono font-black text-white"></span>
     </div>
     
     <div id="board-container">
