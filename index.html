@@ -6,67 +6,86 @@
   <title>恶堕臭丝袜洗脑棋</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com"></script> 
   <style>
-    /* ✅ 1. 背景路径修复：指向 assets/images/bg.jpg */
-    html, body {
+    /* ✅ 1. 背景半透明处理 */
+    body {
       margin: 0;
       padding: 0;
       min-height: 100vh;
-      background: #1a001a url('assets/images/bg.jpg') no-repeat center center fixed !important;
-      background-size: cover !important;
+      background-color: #0e000e; /* 底色：深黑色 */
       color: #bef264;
       font-family: 'Courier New', monospace;
+      position: relative;
     }
 
-    /* ✅ 2. BGM按钮：彻底变短，钉在最右上角 */
+    /* 使用伪元素承载背景图，实现半透明 */
+    body::before {
+      content: "";
+      position: fixed; /* 背景本身依然铺满窗口 */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('assets/images/bg.jpg') no-repeat center center;
+      background-size: cover;
+      opacity: 0.35; /* 透明度：0.35 表示 35% 的亮度，让背景变暗、变虚 */
+      z-index: -1; /* 确保在所有内容后方 */
+    }
+
+    /* ✅ 2. BGM按钮：改为 absolute，随页面滚动而滚走 */
     #bgm-header {
-      position: fixed !important;
+      position: absolute !important; /* 关键：不再悬浮在窗口右上角 */
       top: 15px !important;
       right: 15px !important;
-      z-index: 99999;
+      z-index: 100000;
       width: auto !important;
     }
+    
     #bgm-ctrl {
-      display: inline-flex !important; 
+      display: inline-flex !important;
       align-items: center;
-      background: rgba(0, 0, 0, 0.85) !important;
+      background: rgba(0, 0, 0, 0.6) !important; /* 按钮背景更透一点 */
       border: 2px solid #ff0080 !important;
       color: #ff0080 !important;
       padding: 5px 12px !important;
       border-radius: 20px !important;
       font-size: 11px !important;
       font-weight: bold;
-      box-shadow: 0 0 15px rgba(255, 0, 128, 0.6);
+      box-shadow: 0 0 10px rgba(255, 0, 128, 0.4);
       cursor: pointer;
       white-space: nowrap !important;
     }
 
-    /* ✅ 3. 布局避让：向下推 80px 确保不压标题 */
+    /* 布局避让 */
     .main-layout {
       margin-top: 80px !important; 
       padding: 0 15px 40px 15px;
+      position: relative;
+      z-index: 1;
     }
 
     .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
     
     #connPanel, #gameArea > div, #log {
-      background-color: rgba(0, 0, 0, 0.8) !important;
+      background-color: rgba(0, 0, 0, 0.7) !important; /* 面板透明度微调 */
       border: 2px solid #db2777 !important;
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(8px); /* 增加模糊感，看起来更高级 */
+      -webkit-backdrop-filter: blur(8px);
       border-radius: 1.5rem;
     }
 
     #board-container { 
       position: relative; width: 100%; max-width: 500px; aspect-ratio: 1 / 1; 
       margin: 0 auto; border-radius: 1.5rem; border: 4px solid #db2777;
-      box-shadow: 0 0 30px #ff0080; overflow: hidden; background: rgba(0,0,0,0.4);
+      box-shadow: 0 0 30px #ff0080; overflow: hidden;
+      background: rgba(0,0,0,0.3); 
     }
     #board { width: 100%; height: 100%; display: block; position: relative; z-index: 10; }
     #board-gif-overlay {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: url('assets/images/mask.gif') center/cover no-repeat;
-      opacity: 0.35; pointer-events: none; z-index: 5;
+      opacity: 0.3; pointer-events: none; z-index: 5;
     }
     .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.25rem; }
   </style>
@@ -211,7 +230,7 @@
     roomRef.update({ 
       positions, 
       currentPlayer: (currentPlayer===0?1:0),
-      lastMsg: { id: Date.now(), text: `${currentPlayer===0?'【主人】':'【贱畜】'} 掷出 ${d} 点 -> ${taskTxt}` }
+      lastMsg: { id: Date.now(), text: `${currentPlayer===0?'【奴隶】':'【贱畜】'} 掷出 ${d} 点 -> ${taskTxt}` }
     });
     document.getElementById("task-text").innerText = taskTxt;
     document.getElementById("task").classList.remove("hidden");
