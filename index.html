@@ -13,23 +13,21 @@
     
       /* ✅ 修复：BGM开关改为标准流，不再压字 */
     #bgm-header {
-      display: flex;
-      justify-content: flex-end;
-      padding: 10px;
-      width: 100%;
-    }
-   #bgm-ctrl {
-      position: absolute; 
-      top: 20px; 
-      right: 20px; 
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
       z-index: 100;
-      background: rgba(0, 0, 0, 0.8); 
+    }
+    #bgm-ctrl {
+      background: rgba(0, 0, 0, 0.85); 
       border: 2px solid #db2777;
       color: #ff0080; 
-      padding: 6px 14px; 
-      border-radius: 20px;
+      padding: 6px 12px; 
+      border-radius: 9999px;
       font-size: 12px; 
       cursor: pointer;
+      box-shadow: 0 0 15px #ff0080;
+      white-space: nowrap; /* 防止按钮文字换行 */
     }
     
     #board-container { 
