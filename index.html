@@ -7,92 +7,103 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script> 
-      <style>
-        /* ✅ 1. 背景锁死：强制加载 bg.jpg，即便加载失败也保留深紫渐变底色 */
-        html, body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            /* 指向 assets/images/bg.jpg 漩涡背景图 */
-            background: #1a001a url('assets/images/bg.jpg') no-repeat center center fixed !important;
-            background-size: cover !important; /* 覆盖整个屏幕 */
-            color: #bef264;
+       <style>
+        /* 核心背景：背景图固定且半透明 */
+        body {
+            margin: 0; padding: 0; min-height: 100vh;
+            background-color: #0e000e; color: #bef264;
             font-family: 'Courier New', monospace;
             position: relative; overflow-x: hidden;
         }
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('assets/images/bg.jpg') no-repeat center center;
+            background-size: cover; opacity: 0.35; z-index: -1;
+        }
 
-        /* 2. BGM按钮定位：徹底变短，固定在右上角 */
+        /* ✅ 修复1：BGM按钮位置，固定在屏幕最右上角，不压标题 */
         #bgm-header {
-            position: fixed !important; /* 固定在窗口，不随滚动条走 */
-            top: 15px !important;
-            right: 15px !important;
-            z-index: 100000; /* 确保在最顶层 */
-            width: auto !important;
+            position: fixed !important;
+            top: 10px !important;
+            right: 10px !important;
+            z-index: 10000;
         }
         #bgm-ctrl {
-            display: inline-flex !important; /* 关键：让背景只包裹文字 */
-            align-items: center;
-            background: rgba(0, 0, 0, 0.85) !important; /* BGM按钮本身保持稍深色调 */
-            border: 2px solid #ff0080 !important;
+            display: inline-block !important;
+            background: rgba(0, 0, 0, 0.8) !important;
+            border: 1.5px solid #ff0080 !important;
             color: #ff0080 !important;
-            padding: 5px 12px !important;
+            padding: 4px 10px !important;
             border-radius: 20px !important;
-            font-size: 11px !important;
+            font-size: 10px !important;
             font-weight: bold;
-            box-shadow: 0 0 15px rgba(255, 0, 128, 0.6);
-            cursor: pointer;
-            white-space: nowrap !important; /* 禁止文字折行导致变长 */
+            box-shadow: 0 0 10px rgba(255, 0, 128, 0.5);
         }
 
-        /* 3. 界面层级优化：将所有黑色面板改为半透明 */
-        #connPanel, #gameArea > div, #log {
-            /* rgba(红, 绿, 蓝, 透明度) -> 0.75 表示 75% 的不透明度 */
-            background-color: rgba(0, 0, 0, 0.75) !important; /* 半透明黑 */
-            border: 2px solid #db2777 !important;
-            /* 毛玻璃模糊效果：增加背景图的炫晕感，且不影响文字阅读 */
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px); /* 兼容 Safari */
-            border-radius: 1.5rem;
-        }
-
-        /* 4. 标题间距避让：向下推 80px */
+        /* 布局容器 */
         .main-layout {
-          margin-top: 80px !important; 
-          padding: 0 15px 40px 15px;
+            margin-top: 60px !important; /* 给BGM和标题留出充足空间 */
+            padding: 0 16px 40px 16px;
         }
-
         .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
         
-        /* ✅ 5. 棋盘容器修复：确保 mask.gif 浮在纯黑色之上的最上层 */
+        /* 统一面板样式 */
+        .pink-panel {
+            background-color: rgba(0, 0, 0, 0.75) !important;
+            border: 2.5px solid #db2777 !important;
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* ✅ 修复2：棋盘容器与GIF层级 */
         #board-container { 
-            position: relative; width: 100%; max-width: 500px; aspect-ratio: 1/1; 
+            position: relative; width: 100%; max-width: 450px; aspect-ratio: 1 / 1; 
             margin: 0 auto; border: 4px solid #db2777; border-radius: 1.5rem;
-            overflow: hidden; 
-            /* 棋盘容器强制黑色垫底，防止 GIF 加载不出来时透出别的颜色 */
-            background-color: #000 !important; 
+            overflow: hidden; background: #000;
         }
         #board { 
             width: 100%; height: 100%; display: block; 
-            /* ✅ Canvas (棋盘) z-index 设低，浮在黑色上面，但被 GIF 压在下面 */
-            position: absolute; top: 0; left: 0; z-index: 10 !important; 
+            position: absolute; top:0; left:0; z-index: 5; 
         }
-        #board-gif-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            /* 指向你上传的 mask.gif 遮罩图 */
-            background-image: url('assets/images/mask.gif') !important;
-            background-size: cover;
-            background-position: center;
-            /* ✅ 透明度强制调高，防止被压死看不清 */
-            opacity: 0.5 !important; 
-            pointer-events: none; /* 确保不挡住棋盘点击 */
-            /* ✅ GIF (遮罩) z-index 设最高，绝对压在 Canvas 上面 */
-            z-index: 20 !important; 
+        #board-mask {
+            position: absolute; top:0; left:0; width:100%; height:100%; 
+            background: url('assets/images/mask.gif') center/cover no-repeat;
+            opacity: 0.35; pointer-events: none; z-index: 10; /* GIF必须在Canvas(5)上面 */
         }
         
-        .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.25rem; }
+        /* ✅ 修复3：底部按钮，绝对不溢出边框 */
+        .game-btns-container {
+            display: flex !important;
+            gap: 10px !important;
+            width: 100% !important;
+            margin-top: 10px;
+        }
+        .btn-responsive {
+            flex: 1;
+            height: 54px !important; /* 固定高度，不再被padding撑开 */
+            font-size: 1.1rem !important;
+            font-weight: 900;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            color: white;
+            transition: transform 0.1s;
+        }
+        .btn-main { background-color: #db2777; flex: 2; }
+        .btn-side { background-color: #27272a; font-size: 0.85rem !important; }
+
+        #log { height: 100px; font-size: 11px; overflow-y: auto; color: #f472b6; }
     </style>
 </head>
 <body>
+
+<div id="bgm-header">
+  <div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
+</div>
 
 <div id="bgm-header">
   <div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
