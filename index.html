@@ -7,86 +7,68 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script> 
-           <style>
-        /* 1. 基础背景锁定 */
+     <style>
         body {
             margin: 0; padding: 0; min-height: 100vh;
             background-color: #0e000e; color: #bef264;
             font-family: 'Courier New', monospace;
-            overflow-x: hidden;
+            position: relative; overflow-x: hidden;
         }
+        /* 1. 全局漩涡背景 */
         body::before {
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: url('assets/images/bg.jpg') no-repeat center center;
             background-size: cover; opacity: 0.35; z-index: -1;
         }
 
-        /* 2. 修复 BGM 按钮：不再浮动，直接放在标题下方，彻底解决遮挡电量和标题的问题 */
-        .header-box { padding: 20px 0 10px 0; text-align: center; }
-        .bgm-btn-wrap { margin-top: 10px; }
+        /* 2. 彻底修复 BGM 按钮位置：不再悬浮，跟随页面滚动 */
+        .header-container { position: relative; padding-top: 50px; text-align: center; }
+        #bgm-header { position: absolute; top: 10px; right: 15px; z-index: 50; }
         #bgm-ctrl {
-            display: inline-block;
-            background: rgba(255, 0, 128, 0.2);
-            border: 1px solid #ff0080;
-            color: #ff0080;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            cursor: pointer;
+            background: rgba(0, 0, 0, 0.8); border: 1px solid #ff0080;
+            color: #ff0080; padding: 4px 8px; border-radius: 12px;
+            font-size: 10px; cursor: pointer;
         }
 
-        .neon-pink { text-shadow: 0 0 15px #ff0080; }
-
-        /* 3. 统一面板：半透明黑色，带粉色边框 */
+        .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
+        
+        /* 3. 统一面板样式：半透明黑 */
         .glass-panel {
-            background: rgba(0, 0, 0, 0.8) !important;
+            background-color: rgba(0, 0, 0, 0.75) !important;
             border: 2px solid #db2777 !important;
-            backdrop-filter: blur(8px);
-            border-radius: 1.25rem;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
+            backdrop-filter: blur(8px); border-radius: 1.5rem;
+            margin-bottom: 1rem; padding: 1rem;
         }
 
-        /* 4. 棋盘：找回 mask.gif 并确保不黑屏 */
+        /* 4. 棋盘：修复黑屏，找回 mask.gif 遮罩层 */
         #board-container { 
-            position: relative; width: 100%; max-width: 400px; aspect-ratio: 1/1; 
-            margin: 0 auto; border: 3px solid #db2777; border-radius: 1rem;
+            position: relative; width: 100%; max-width: 450px; aspect-ratio: 1/1; 
+            margin: 0 auto; border: 4px solid #db2777; border-radius: 1.5rem;
             overflow: hidden; background: #000;
         }
-        #board { width: 100%; height: 100%; position: relative; z-index: 1; }
+        #board { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10; }
         #board-mask {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: url('assets/images/mask.gif') center/cover no-repeat;
-            opacity: 0.3; pointer-events: none; z-index: 2;
+            opacity: 0.4; pointer-events: none; z-index: 20;
         }
 
-        /* 5. 修复底部按钮：解决图8中的“绿字乱码”问题，恢复大按钮样式 */
-        .action-group {
-            display: flex; gap: 10px; width: 100%; margin-top: 1rem;
-        }
+        /* 5. 底部按钮修复：严禁溢出，找回丢失的按钮样式 */
+        .btn-group { display: flex; gap: 10px; width: 100%; margin-top: 10px; }
         .btn-main {
-            flex: 2; background: #db2777; color: white; height: 55px;
-            border-radius: 1rem; font-weight: 900; font-size: 1.25rem;
-            display: flex; align-items: center; justify-content: center;
+            flex: 2; background-color: #db2777; color: white;
+            font-weight: 900; border-radius: 1rem; padding: 15px 0;
+            font-size: 1.25rem; text-align: center; border: none;
         }
         .btn-sub {
-            flex: 1; background: #27272a; color: #a1a1aa; height: 55px;
-            border-radius: 1rem; font-size: 0.85rem;
-            display: flex; align-items: center; justify-content: center;
+            flex: 1; background-color: #27272a; color: #a1a1aa;
+            border-radius: 1rem; padding: 15px 0; font-size: 0.85rem;
+            text-align: center; border: none;
         }
-        
-        #log { height: 80px; overflow-y: auto; font-size: 11px; color: #f472b6; margin-top: 1rem; }
+        #log { height: 100px; overflow-y: auto; font-size: 11px; color: #f472b6; }
     </style>
 </head>
 <body>
-
-<div id="bgm-header">
-  <div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
-</div>
-
-<div id="bgm-header">
-  <div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
-</div>
 
     <div class="max-w-md mx-auto px-4">
         <div class="header-container">
