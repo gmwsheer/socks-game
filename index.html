@@ -7,61 +7,79 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script> 
-    <style>
-    /* 1. 背景与透明度设置 */
+      <style>
+    /* ✅ 1. 背景半透明处理 */
     body {
-      margin: 0; padding: 0; min-height: 100vh;
-      background-color: #0e000e; color: #bef264;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: #0e000e; /* 底色：深黑色 */
+      color: #bef264;
       font-family: 'Courier New', monospace;
-      position: relative; overflow-x: hidden;
+      position: relative;
     }
+
+    /* 使用伪元素承载背景图，实现半透明 */
     body::before {
-      content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      content: "";
+      position: fixed; /* 背景本身依然铺满窗口 */
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background: url('assets/images/bg.jpg') no-repeat center center;
-      background-size: cover; opacity: 0.35; z-index: -1;
+      background-size: cover;
+      opacity: 0.35; /* 透明度：0.35 表示 35% 的亮度，让背景变暗、变虚 */
+      z-index: -1; /* 确保在所有内容后方 */
     }
 
-    /* ✅ 修复1：BGM按钮锁定在屏幕最右上角，不随页面滚动 */
+    /* ✅ 2. BGM按钮：改为 absolute，随页面滚动而滚走 */
     #bgm-header {
-      position: fixed !important;
-      top: 10px !important;
-      right: 10px !important;
-      z-index: 9999;
+      position: absolute !important; /* 关键：不再悬浮在窗口右上角 */
+      top: 15px !important;
+      right: 15px !important;
+      z-index: 100000;
+      width: auto !important;
     }
+    
     #bgm-ctrl {
-      display: inline-block;
-      background: rgba(0, 0, 0, 0.7);
-      border: 1.5px solid #ff0080;
-      color: #ff0080;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 11px;
+      display: inline-flex !important;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.6) !important; /* 按钮背景更透一点 */
+      border: 2px solid #ff0080 !important;
+      color: #ff0080 !important;
+      padding: 5px 12px !important;
+      border-radius: 20px !important;
+      font-size: 11px !important;
       font-weight: bold;
-      cursor: pointer;
       box-shadow: 0 0 10px rgba(255, 0, 128, 0.4);
+      cursor: pointer;
+      white-space: nowrap !important;
     }
 
-    /* 布局容器：增加顶部间距防止压到标题 */
+    /* 布局避让 */
     .main-layout {
-      padding: 60px 15px 40px 15px !important; /* 60px 确保标题不被BGM按钮压住 */
+      margin-top: 80px !important; 
+      padding: 0 15px 40px 15px;
+      position: relative;
+      z-index: 1;
     }
 
     .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
     
-    /* 半透明面板 */
     #connPanel, #gameArea > div, #log {
-      background-color: rgba(0, 0, 0, 0.75) !important;
+      background-color: rgba(0, 0, 0, 0.7) !important; /* 面板透明度微调 */
       border: 2px solid #db2777 !important;
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px); /* 增加模糊感，看起来更高级 */
       -webkit-backdrop-filter: blur(8px);
       border-radius: 1.5rem;
     }
 
-    /* 棋盘容器适应性 */
     #board-container { 
-      position: relative; width: 100%; max-width: 450px; aspect-ratio: 1 / 1; 
+      position: relative; width: 100%; max-width: 500px; aspect-ratio: 1 / 1; 
       margin: 0 auto; border-radius: 1.5rem; border: 4px solid #db2777;
-      box-shadow: 0 0 25px #ff0080; overflow: hidden; background: rgba(0,0,0,0.3); 
+      box-shadow: 0 0 30px #ff0080; overflow: hidden;
+      background: rgba(0,0,0,0.3); 
     }
     #board { width: 100%; height: 100%; display: block; position: relative; z-index: 10; }
     #board-gif-overlay {
@@ -69,18 +87,7 @@
       background: url('assets/images/mask.gif') center/cover no-repeat;
       opacity: 0.3; pointer-events: none; z-index: 5;
     }
-
-    /* ✅ 修复2：按钮缩放，防止超出边框 */
-    .btn-action {
-      padding: 12px 5px !important; /* 减小内边距 */
-      font-size: 1.25rem !important; /* 调整字号 */
-      font-weight: 900;
-      border-radius: 1rem;
-      transition: transform 0.1s;
-      width: 100%; /* 宽度自适应容器 */
-    }
-    
-    #log { height: 120px !important; font-size: 12px !important; }
+    .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.25rem; }
   </style>
 </head>
 <body>
