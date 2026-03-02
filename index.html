@@ -8,7 +8,18 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { font-family: 'Courier New', monospace; background: linear-gradient(45deg, #1a0000, #330011); min-height: 100dvh; margin: 0; overscroll-behavior: none; }
+    body {
+  font-family: 'Courier New', monospace;
+  /* 增加背景图：assets/images/bg.jpg */
+  background: linear-gradient(rgba(26, 0, 0, 0.85), rgba(51, 0, 17, 0.85)), 
+              url('assets/images/bg.jpg'); 
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  min-height: 100dvh;
+  margin: 0;
+  overscroll-behavior: none;
+}
     .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
     #board-container { position: relative; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; margin: 0 auto; }
     #board { background: rgba(0,0,0,0.9); border-radius: 2rem; border: 6px solid #db2777; width: 100%; height: 100%; box-shadow: 0 0 50px #ff0080; }
@@ -84,7 +95,7 @@
   const db = firebase.database();
 
   const tasks = {
-    1: "双膝跪地，向丝袜主人请安", 2: "自抽耳光 5 下", 3: "抚摸敏感区深呼吸丝袜味道 30 秒让味道侵入你的大脑", 
+    1: "双膝跪地，向丝袜主人请安", 2: "跪地喊主人并自抽耳光 5 下", 3: "抚摸敏感区深呼吸丝袜味道 30 秒让味道侵入你的大脑", 
     4: "原地转圈 10 次并叫：我是丝袜奴隶", 5: "用舌头清理丝袜上的褶皱", 6: "后退 2 格并将鼻勾和口撑戴上（5分钟后可选择摘下）",
     7: "双手比耶喊我是贱狗，前进 3 格", 8: "保持跪姿翻白眼伸舌头直到下一回合", 9: "捏着乳头亲吻丝袜 10 次让丝袜代替你思考", 
     10: "主人踩在脸上 1 分钟喊我是主人得臭鞋垫", 11: "左右手扇自己 10 下", 12: "闻一分钟臭丝袜让气息包裹着你的脑子", 
