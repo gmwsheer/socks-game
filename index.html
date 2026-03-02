@@ -12,8 +12,6 @@
     .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
     
       /* ✅ 修复：BGM开关改为标准流，不再压字 */
-   <style>
-  /* 1. 强制按钮为自适应短尺寸，并固定在屏幕右上角 */
   #bgm-header {
     position: fixed; /* 始终在右上角，不随页面滚动乱动 */
     top: 15px;       /* 距离顶部距离 */
@@ -40,7 +38,6 @@
   .max-w-4xl {
     padding-top: 60px !important; /* 这个值决定了标题离顶部的距离，拉开一行空间 */
   }
-</style>
 
 <div id="bgm-header">
   <div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
