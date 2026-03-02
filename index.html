@@ -7,159 +7,153 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script> 
-        <style>
-    /* 核心背景：半透明设置 */
-    body {
-      margin: 0; padding: 0; min-height: 100vh;
-      background-color: #0e000e; color: #bef264;
-      font-family: 'Courier New', monospace;
-      position: relative; overflow-x: hidden;
-    }
-    body::before {
-      content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: url('assets/images/bg.jpg') no-repeat center center;
-      background-size: cover; opacity: 0.35; z-index: -1;
-    }
+    <style>
+        body {
+            margin: 0; padding: 0; min-height: 100vh;
+            background-color: #0e000e; color: #bef264;
+            font-family: 'Courier New', monospace;
+            position: relative; 
+        }
+        /* 背景图半透明 */
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('assets/images/bg.jpg') no-repeat center center;
+            background-size: cover; opacity: 0.35; z-index: -1;
+        }
 
-    /* ✅ 修复1：BGM按钮位置，不再跟随页面，不压标题 */
-    #bgm-header {
-      position: fixed !important;
-      top: 12px !important;
-      right: 12px !important;
-      z-index: 99999;
-    }
-    #bgm-ctrl {
-      display: inline-flex !important;
-      background: rgba(0, 0, 0, 0.8) !important;
-      border: 1.5px solid #ff0080 !important;
-      color: #ff0080 !important;
-      padding: 4px 10px !important;
-      border-radius: 20px !important;
-      font-size: 10px !important;
-      font-weight: bold;
-      box-shadow: 0 0 12px rgba(255, 0, 128, 0.6);
-    }
+        /* ✅ 修正1：BGM按钮不再跟随屏幕，且不压标题 */
+        .header-container {
+            position: relative; /* 关键：作为BGM定位的基准 */
+            padding-top: 50px;
+            text-align: center;
+        }
+        #bgm-header {
+            position: absolute !important; /* 改为绝对定位，随页面滚动 */
+            top: 10px !important;
+            right: 15px !important;
+            z-index: 50;
+        }
+        #bgm-ctrl {
+            background: rgba(0, 0, 0, 0.8) !important;
+            border: 1px solid #ff0080 !important;
+            color: #ff0080 !important;
+            padding: 4px 8px !important;
+            border-radius: 12px !important;
+            font-size: 10px !important;
+            cursor: pointer;
+        }
 
-    /* 布局容器调整 */
-    .main-layout {
-      margin-top: 50px !important; /* 给标题留出空间，不被BGM遮挡 */
-      padding: 0 16px 40px 16px !important;
-    }
-    .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
-    
-    /* 统一面板样式 */
-    #connPanel, #gameArea > div, #log {
-      background-color: rgba(0, 0, 0, 0.75) !important;
-      border: 2px solid #db2777 !important;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border-radius: 1.5rem;
-      overflow: hidden; /* 防止内部元素溢出 */
-    }
+        .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
 
-    /* 棋盘容器 */
-    #board-container { 
-      position: relative; width: 100%; max-width: 500px; aspect-ratio: 1 / 1; 
-      margin: 0 auto; border-radius: 1.5rem; border: 4px solid #db2777;
-      box-shadow: 0 0 25px #ff0080; overflow: hidden; background: rgba(0,0,0,0.3); 
-    }
-    #board { width: 100%; height: 100%; display: block; position: relative; z-index: 10; }
-    
-    /* ✅ 修复2：底部按钮样式调整，绝不溢出 */
-    .game-btns-container {
-      display: flex !important;
-      gap: 10px !important;
-      width: 100% !important;
-      padding: 0 2px !important;
-    }
-    .btn-responsive {
-      flex: 1;
-      height: 60px !important; /* 固定高度，防止被撑大 */
-      font-size: 1.2rem !important;
-      font-weight: 900;
-      border-radius: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.1s;
-      white-space: nowrap;
-      border: none;
-    }
-    /* 调整“清空大脑”较小字号 */
-    .btn-small-text { font-size: 0.85rem !important; }
-    
-    #log { height: 110px !important; font-size: 11px !important; margin-top: 15px !important; }
-  </style>
+        /* 面板统一样式 */
+        .glass-panel {
+            background-color: rgba(0, 0, 0, 0.7) !important;
+            border: 2px solid #db2777 !important;
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+        }
+
+        #board-container { 
+            position: relative; width: 100%; max-width: 450px; aspect-ratio: 1/1; 
+            margin: 0 auto; border: 4px solid #db2777; border-radius: 1.5rem;
+            overflow: hidden; background: rgba(0,0,0,0.3);
+        }
+        #board { width: 100%; height: 100%; }
+
+        /* ✅ 修正2：按钮不再超出边框 */
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-main {
+            flex: 2; /* 恶堕吧占大头 */
+            background-color: #db2777;
+            color: white;
+            font-weight: 900;
+            border-radius: 1rem;
+            padding: 12px 0; /* 仅上下间距，不撑左右 */
+            font-size: 1.2rem;
+            text-align: center;
+        }
+        .btn-sub {
+            flex: 1; /* 清空大脑占小头 */
+            background-color: #27272a;
+            color: #a1a1aa;
+            border-radius: 1rem;
+            padding: 12px 0;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        
+        #log { height: 100px; overflow-y: auto; font-size: 11px; color: #f472b6; }
+    </style>
 </head>
-<body class="p-0">
+<body>
 
-<div id="bgm-header">
-  <div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
-</div>
+    <div class="max-w-md mx-auto px-4">
+        <div class="header-container">
+            <div id="bgm-header">
+                <div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
+            </div>
+            <h1 class="text-3xl font-black text-pink-600 neon-pink">恶堕臭丝袜洗脑棋</h1>
+            <p class="text-pink-400 mt-1 italic text-xs">成为主人的丝袜狗</p>
+        </div>
 
+        <div id="connPanel" class="glass-panel mt-6">
+            <button onclick="createRoom()" class="w-full py-4 bg-pink-600 text-white rounded-2xl text-xl font-black mb-4"> 创建房间（成为丝袜奴隶） </button>
+            <input id="joinID" placeholder="输入房号进行调教" class="w-full bg-zinc-900 border-2 border-pink-500 p-3 rounded-xl text-white text-center mb-2 outline-none">
+            <button onclick="joinRoom()" class="w-full py-4 bg-pink-500 text-black rounded-2xl text-xl font-black"> 加入（成为丝袜贱畜） </button>
+        </div>
 
-<audio id="snd-bgm" src="assets/audio/bgm.mp3" loop preload="auto"></audio>
-<audio id="snd-dice" src="assets/audio/dice.mp3" preload="auto"></audio>
-<audio id="snd-task" src="assets/audio/task.mp3" preload="auto"></audio>
+        <div id="gameArea" class="hidden">
+            <div class="glass-panel text-center py-2">
+                <span class="text-pink-300 text-xs">调教房号：</span>
+                <span id="currentIDLabel" class="text-white font-bold"></span>
+            </div>
 
-<div class="max-w-md mx-auto main-layout">
-  <div class="text-center mb-8 pt-4">
-    <h1 class="text-3xl font-black text-pink-600 neon-pink">恶堕臭丝袜洗脑棋</h1>
-    <p class="text-pink-400 mt-2 italic text-sm">成为主人的丝袜狗</p>
-  </div>
+            <div id="board-container">
+                <canvas id="board"></canvas>
+            </div>
 
-  <div id="connPanel" class="p-6 mb-6">
-    <div class="flex flex-col gap-4">
-      <button onclick="createRoom()" class="w-full py-4 bg-pink-600 text-white rounded-2xl text-xl font-black active:scale-95"> 创建房间（成为丝袜奴隶） </button>
-      <div class="flex flex-col gap-2">
-        <input id="joinID" placeholder="输入房号进行调教" class="bg-zinc-900/80 border-2 border-pink-500 px-4 py-3 text-lg rounded-xl text-white text-center outline-none">
-        <button onclick="joinRoom()" class="w-full py-4 bg-pink-500 text-black rounded-2xl text-xl font-black active:scale-95"> 加入（成为丝袜贱畜） </button>
-      </div>
+            <div id="info" class="glass-panel text-center font-black text-lg py-3 mt-4"> 正在侵入你的大脑...</div>
+
+            <div class="btn-group">
+                <button onclick="rollDice()" id="rollBtn" class="btn-main active:scale-95 disabled:opacity-50">恶堕吧</button>
+                <button onclick="resetGame()" class="btn-sub active:scale-95">清空大脑</button>
+            </div>
+
+            <div id="log" class="glass-panel mt-4"></div>
+        </div>
     </div>
-  </div>
 
-  <div id="gameArea" class="hidden space-y-4">
-    <div class="p-2 text-center">
-      <span class="text-pink-300 text-xs">调教房号：</span>
-      <span id="currentIDLabel" class="text-xl font-mono font-black text-white"></span>
+    <div id="task" class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-[100] p-6 text-center">
+        <div class="bg-zinc-950 border-4 border-pink-600 p-8 rounded-[2rem] max-w-sm">
+            <div id="task-text" class="text-lg text-white mb-6 font-bold"></div>
+            <button onclick="closeTask()" class="w-full bg-pink-600 text-white py-3 rounded-xl font-black">遵命，主人</button>
+        </div>
     </div>
-    
-    <div id="board-container">
-      <canvas id="board"></canvas>
-      <div id="board-gif-overlay" style="position: absolute; top:0; left:0; width:100%; height:100%; background: url('assets/images/mask.gif') center/cover no-repeat; opacity: 0.3; pointer-events: none; z-index: 5;"></div>
-    </div>
-    
-    <div id="info" class="p-4 text-center text-lg font-black border-2 border-pink-500"> 正在侵入你的大脑...</div>
-    
-    <div class="game-btns-container">
-      <button onclick="rollDice()" id="rollBtn" class="btn-responsive bg-pink-600 text-white shadow-lg active:scale-95 disabled:opacity-50" style="flex: 2;">恶堕吧</button>
-      <button onclick="resetGame()" class="btn-responsive bg-zinc-800 text-white btn-small-text">清空大脑</button>
-    </div>
-    
-    <div id="log" class="p-3 overflow-y-auto font-mono text-pink-300"></div>
-  </div>
-</div>
 
-<div id="task" class="hidden fixed inset-0 bg-black/95 flex items-center justify-center z-[100000] p-6">
-  <div class="bg-zinc-950 border-[6px] border-pink-600 w-full max-w-sm rounded-[30px] p-8 text-center shadow-[0_0_50px_#ff0080]">
-    <div id="task-text" class="text-lg leading-relaxed text-pink-100 mb-8 font-bold"></div>
-    <button onclick="closeTask()" class="w-full bg-pink-600 text-white font-black py-3 rounded-xl">遵命，主人</button>
-  </div>
-</div>
+    <audio id="snd-bgm" src="assets/audio/bgm.mp3" loop></audio>
+    <audio id="snd-dice" src="assets/audio/dice.mp3"></audio>
+    <audio id="snd-task" src="assets/audio/task.mp3"></audio>
 
 <script>
-  // Firebase 配置（保持不变）
-  const firebaseConfig = {
-    apiKey: "AIzaSyCzuqADikKXCOKtQXoiVkGRjPiceY-HVDk",
-    authDomain: "swsgfxq-game.firebaseapp.com",
-    databaseURL: "https://swsgfxq-game-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "swsgfxq-game",
-    storageBucket: "swsgfxq-game.firebasestorage.app",
-    messagingSenderId: "591308485557",
-    appId: "1:591308485557:web:045018427b5e90076f9ffc"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+    // Firebase配置保持不变
+    const firebaseConfig = {
+        apiKey: "AIzaSyCzuqADikKXCOKtQXoiVkGRjPiceY-HVDk",
+        authDomain: "swsgfxq-game.firebaseapp.com",
+        databaseURL: "https://swsgfxq-game-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "swsgfxq-game",
+        storageBucket: "swsgfxq-game.firebasestorage.app",
+        messagingSenderId: "591308485557",
+        appId: "1:591308485557:web:045018427b5e90076f9ffc"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
   
   const tasks = {
     1: "双膝跪地，向丝袜主人磕头", 2:"向主人磕头自抽耳光 5 下", 3: "抚摸敏感区深呼吸丝袜味道 30 秒让味道侵入你的大脑", 
@@ -179,47 +173,46 @@
     43: "距离终点一步之遥，恶堕吧把脑子扔掉听从主人的命令", 44: "终点：口里喊着我是主人的人骚狗射出来！彻底恶堕永远成为丝袜无脑贱畜！"
   };
 
-  let myColor = -1, positions = [0, 0], currentPlayer = 0, roomRef = null, lastMsgId = "";
-  const maxPos = 44, canvas = document.getElementById('board'), ctx = canvas.getContext('2d');
+    let myColor = -1, positions = [0, 0], currentPlayer = 0, roomRef = null, lastMsgId = "";
+    const maxPos = 44, canvas = document.getElementById('board'), ctx = canvas.getContext('2d');
 
-  function toggleBGM() {
-    const bgm = document.getElementById("snd-bgm");
-    const btn = document.getElementById("bgm-ctrl");
-    if (bgm.paused) { bgm.play(); btn.innerText = "🎵 BGM: ON"; btn.style.color = "#00ffff"; } 
-    else { bgm.pause(); btn.innerText = "🎵 BGM: OFF"; btn.style.color = "#ff0080"; }
-  }
+    function toggleBGM() {
+        const bgm = document.getElementById("snd-bgm");
+        const btn = document.getElementById("bgm-ctrl");
+        if (bgm.paused) { bgm.play(); btn.innerText = "🎵 BGM: ON"; btn.style.color = "#00ffff"; } 
+        else { bgm.pause(); btn.innerText = "🎵 BGM: OFF"; btn.style.color = "#ff0080"; }
+    }
 
-  function createRoom(){
-    const id = Math.random().toString(36).substring(2,8).toUpperCase();
-    myColor = 0; roomRef = db.ref("rooms/"+id);
-    roomRef.set({ positions:[0,0], currentPlayer:0, lastMsg: {id: Date.now(), text: "调教开始"} });
-    document.getElementById("currentIDLabel").innerText = id;
-    enterUI();
-  }
+    function createRoom(){
+        const id = Math.random().toString(36).substring(2,8).toUpperCase();
+        myColor = 0; roomRef = db.ref("rooms/"+id);
+        roomRef.set({ positions:[0,0], currentPlayer:0, lastMsg: {id: Date.now(), text: "调教开始"} });
+        document.getElementById("currentIDLabel").innerText = id;
+        enterUI();
+    }
 
-  function joinRoom(){
-    const id = document.getElementById("joinID").value.trim().toUpperCase();
-    if(!id) return;
-    myColor = 1; roomRef = db.ref("rooms/"+id);
-    document.getElementById("currentIDLabel").innerText = id;
-    enterUI();
-  }
+    function joinRoom(){
+        const id = document.getElementById("joinID").value.trim().toUpperCase();
+        if(!id) return;
+        myColor = 1; roomRef = db.ref("rooms/"+id);
+        document.getElementById("currentIDLabel").innerText = id;
+        enterUI();
+    }
 
-  function enterUI(){
-    document.getElementById("connPanel").classList.add("hidden");
-    document.getElementById("gameArea").classList.remove("hidden");
-    roomRef.on("value", (snap) => {
-      const data = snap.val(); if(!data) return;
-      positions = data.positions; currentPlayer = data.currentPlayer;
-      if(data.lastMsg && data.lastMsg.id !== lastMsgId){
-        const log = document.getElementById("log");
-        const div = document.createElement("div");
-        div.className = "mb-1 border-b border-pink-900/30 pb-1";
-        div.innerText = `> ${data.lastMsg.text}`;
-        log.prepend(div);
-        lastMsgId = data.lastMsg.id;
-      }
-      const isMyTurn = (currentPlayer === myColor);
+    function enterUI(){
+        document.getElementById("connPanel").classList.add("hidden");
+        document.getElementById("gameArea").classList.remove("hidden");
+        roomRef.on("value", (snap) => {
+            const data = snap.val(); if(!data) return;
+            positions = data.positions; currentPlayer = data.currentPlayer;
+            if(data.lastMsg && data.lastMsg.id !== lastMsgId){
+                const log = document.getElementById("log");
+                const div = document.createElement("div");
+                div.innerText = `> ${data.lastMsg.text}`;
+                log.prepend(div);
+                lastMsgId = data.lastMsg.id;
+            }
+            const isMyTurn = (currentPlayer === myColor);
       document.getElementById("info").innerHTML = (currentPlayer===0?"【奴隶】":"【贱畜】") + (isMyTurn ? "<br><span class='text-yellow-300'>该你了</span>" : "<br>恶堕中...");
       document.getElementById("rollBtn").disabled = !isMyTurn;
       drawBoard();
