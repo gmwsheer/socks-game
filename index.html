@@ -8,32 +8,29 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* ✅ 1. 背景锁死：强制加载 bg.jpg，即便加载失败也保留深紫渐变底色 */
+    /* ✅ 1. 背景路径修复：指向 assets/images/bg.jpg */
     html, body {
       margin: 0;
       padding: 0;
       min-height: 100vh;
-      /* 这里指向 assets/images/bg.jpg 漩涡背景图 */
       background: #1a001a url('assets/images/bg.jpg') no-repeat center center fixed !important;
       background-size: cover !important;
       color: #bef264;
       font-family: 'Courier New', monospace;
     }
 
-    /* ✅ 2. BGM按钮定位：彻底变短，固定在右上角 */
+    /* ✅ 2. BGM按钮：彻底变短，钉在最右上角 */
     #bgm-header {
-      position: fixed !important; /* 固定在窗口，不随滚动条走 */
+      position: fixed !important;
       top: 15px !important;
       right: 15px !important;
-      z-index: 100000; /* 确保在最顶层 */
-      width: auto !important; /* 严禁占满全宽 */
-      display: block !important;
+      z-index: 99999;
+      width: auto !important;
     }
-
     #bgm-ctrl {
-      display: inline-flex !important; /* 关键：让背景只包裹文字 */
+      display: inline-flex !important; 
       align-items: center;
-      background: rgba(0, 0, 0, 0.85) !important; /* BGM按钮本身保持稍深色调 */
+      background: rgba(0, 0, 0, 0.85) !important;
       border: 2px solid #ff0080 !important;
       color: #ff0080 !important;
       padding: 5px 12px !important;
@@ -42,21 +39,10 @@
       font-weight: bold;
       box-shadow: 0 0 15px rgba(255, 0, 128, 0.6);
       cursor: pointer;
-      white-space: nowrap !important; /* 禁止文字折行导致变长 */
+      white-space: nowrap !important;
     }
 
-    /* ✅ 3. 界面层级优化：将所有黑色面板改为半透明 */
-    #connPanel, #gameArea > div, #log {
-      /* rgba(红, 绿, 蓝, 透明度) -> 0.75 表示 75% 的不透明度 */
-      background-color: rgba(0, 0, 0, 0.75) !important; /* 半透明黑 */
-      border: 2px solid #db2777 !important;
-      /* 毛玻璃模糊效果：增加背景图的炫晕感，且不影响文字阅读 */
-      backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px); /* 兼容 Safari */
-      border-radius: 1.5rem;
-    }
-
-    /* 4. 标题间距避让：向下推 80px */
+    /* ✅ 3. 布局避让：向下推 80px 确保不压标题 */
     .main-layout {
       margin-top: 80px !important; 
       padding: 0 15px 40px 15px;
@@ -64,22 +50,24 @@
 
     .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
     
+    #connPanel, #gameArea > div, #log {
+      background-color: rgba(0, 0, 0, 0.8) !important;
+      border: 2px solid #db2777 !important;
+      backdrop-filter: blur(6px);
+      border-radius: 1.5rem;
+    }
+
     #board-container { 
       position: relative; width: 100%; max-width: 500px; aspect-ratio: 1 / 1; 
       margin: 0 auto; border-radius: 1.5rem; border: 4px solid #db2777;
-      box-shadow: 0 0 30px #ff0080; overflow: hidden;
-      /* 棋盘底色也改为半透明 */
-      background: rgba(0,0,0,0.5); 
+      box-shadow: 0 0 30px #ff0080; overflow: hidden; background: rgba(0,0,0,0.4);
     }
     #board { width: 100%; height: 100%; display: block; position: relative; z-index: 10; }
-    
-    /* 这是棋盘上的 GIF 遮罩 */
     #board-gif-overlay {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: url('assets/images/mask.gif') center/cover no-repeat;
       opacity: 0.35; pointer-events: none; z-index: 5;
     }
-    
     .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.25rem; }
   </style>
 </head>
@@ -101,10 +89,10 @@
 
   <div id="connPanel" class="p-6 mb-6 shadow-2xl">
     <div class="flex flex-col gap-4">
-      <button onclick="createRoom()" class="btn-xl bg-pink-600 text-white w-full active:scale-95"> 创建房间（成为丝袜奴隶） </button>
+      <button onclick="createRoom()" class="btn-xl bg-pink-600 text-white w-full"> 创建房间（成为丝袜奴隶） </button>
       <div class="flex flex-col gap-2">
-        <input id="joinID" placeholder="输入房号" class="bg-zinc-900/80 border-2 border-pink-500 px-4 py-3 text-lg rounded-xl text-white text-center outline-none focus:ring-2 focus:ring-pink-300">
-        <button onclick="joinRoom()" class="btn-xl bg-pink-500 text-black w-full active:scale-95">加入（成为丝袜贱畜） </button>
+        <input id="joinID" placeholder="输入房号进行调教" class="bg-zinc-900 border-2 border-pink-500 px-4 py-3 text-lg rounded-xl text-white text-center outline-none">
+        <button onclick="joinRoom()" class="btn-xl bg-pink-500 text-black w-full"> 加入（成为丝袜贱畜） </button>
       </div>
     </div>
   </div>
@@ -114,20 +102,16 @@
       <span class="text-pink-300 text-xs">调教房号：</span>
       <span id="currentIDLabel" class="text-xl font-mono font-black text-white"></span>
     </div>
-    
     <div id="board-container">
       <canvas id="board"></canvas>
       <div id="board-gif-overlay"></div>
     </div>
-    
-    <div id="info" class="p-4 text-center text-lg font-black border-2 border-pink-500">正在入侵你的脑子...</div>
-    
+    <div id="info" class="p-4 text-center text-lg font-black"> 正在侵入你的大脑...</div>
     <div class="flex gap-2">
-      <button onclick="rollDice()" id="rollBtn" class="flex-[2] bg-pink-600 text-white text-xl font-black py-4 rounded-xl shadow-lg active:scale-95 disabled:opacity-50">恶堕吧</button>
-      <button onclick="resetGame()" class="flex-1 bg-zinc-800 text-white rounded-xl text-xs">清空大脑</button>
+      <button onclick="rollDice()" id="rollBtn" class="flex-[2] bg-pink-600 text-white text-xl font-black py-4 rounded-xl shadow-lg disabled:opacity-50">恶堕吧</button>
+      <button onclick="resetGame()" class="flex-1 bg-zinc-800 text-white rounded-xl text-xs"> 清空大脑 </button>
     </div>
-    
-    <div id="log" class="p-4 h-36 overflow-y-auto font-mono text-xs text-pink-300 border-2 border-pink-900"></div>
+    <div id="log" class="p-4 h-36 overflow-y-auto font-mono text-xs text-pink-300"></div>
   </div>
 </div>
 
@@ -151,8 +135,7 @@
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
-
-  // 恢复原始 V5 任务文字
+  
   const tasks = {
     1: "双膝跪地，向丝袜主人磕头", 2:"向主人磕头自抽耳光 5 下", 3: "抚摸敏感区深呼吸丝袜味道 30 秒让味道侵入你的大脑", 
     4: "原地转圈 10 次并叫：我是丝袜贱狗", 5: "用舌头清理丝袜上的褶皱", 6: "后退 2 格并将鼻勾和口撑戴上（5分钟后可选择摘下）",
@@ -170,8 +153,6 @@
     40: "又变白痴了，脑子液化了吧后退 3 格", 41: "撸着鸡巴扇10 个耳光", 42: "保持跪姿翻白眼伸舌头流口水2 分钟", 
     43: "距离终点一步之遥，恶堕吧把脑子扔掉听从主人的命令", 44: "终点：口里喊着我是主人的人骚狗射出来！彻底恶堕永远成为丝袜无脑贱畜！"
   };
-
- 人自扇 15 下", 35: "后退 5 格", 36: "叼着丝袜跪爬", 37: "塞进嘴吸吮 1 分钟", 38: "前进 3 格", 39: "谢谢主人调教", 40: "后退 3 格", 41: "撸着鸡巴扇耳光", 42: "翻白眼伸舌头 2 分钟", 43: "听从主人命令", 44: "终点：彻底恶堕！" };
 
   let myColor = -1, positions = [0, 0], currentPlayer = 0, roomRef = null, lastMsgId = "";
   const maxPos = 44, canvas = document.getElementById('board'), ctx = canvas.getContext('2d');
@@ -205,8 +186,6 @@
     roomRef.on("value", (snap) => {
       const data = snap.val(); if(!data) return;
       positions = data.positions; currentPlayer = data.currentPlayer;
-      
-      // ✅ 修复：确保文字同步到底部的 Log 区域
       if(data.lastMsg && data.lastMsg.id !== lastMsgId){
         const log = document.getElementById("log");
         const div = document.createElement("div");
@@ -215,9 +194,8 @@
         log.prepend(div);
         lastMsgId = data.lastMsg.id;
       }
-
       const isMyTurn = (currentPlayer === myColor);
-      document.getElementById("info").innerHTML = (currentPlayer===0?"【奴隶】":"【贱畜】") + (isMyTurn ? "<br><span class='text-yellow-300'>该你了</span>" : "<br>等待...");
+      document.getElementById("info").innerHTML = (currentPlayer===0?"【奴隶】":"【贱畜】") + (isMyTurn ? "<br><span class='text-yellow-300'>该你了</span>" : "<br>恶堕中...");
       document.getElementById("rollBtn").disabled = !isMyTurn;
       drawBoard();
     });
@@ -228,20 +206,13 @@
     const d = Math.floor(Math.random()*6)+1;
     let newPos = positions[currentPlayer] + d;
     if(newPos >= maxPos) newPos = maxPos;
-    
     positions[currentPlayer] = newPos;
-    // 获取具体任务文字并拼接到 Log 消息中
-    const taskTxt = tasks[newPos] || "继续前进";
-    const roleName = currentPlayer === 0 ? "【奴隶】" : "【贱畜】";
-    const fullMsg = `${roleName} 掷出 ${d} 点 -> ${taskTxt}`;
-    
+    const taskTxt = tasks[newPos] || "继续下沉";
     roomRef.update({ 
       positions, 
       currentPlayer: (currentPlayer===0?1:0),
-      lastMsg: { id: Date.now(), text: fullMsg }
+      lastMsg: { id: Date.now(), text: `${currentPlayer===0?'【主人】':'【贱畜】'} 掷出 ${d} 点 -> ${taskTxt}` }
     });
-    
-    // 弹窗显示文字
     document.getElementById("task-text").innerText = taskTxt;
     document.getElementById("task").classList.remove("hidden");
     document.getElementById("snd-task").play().catch(()=>{});
@@ -263,7 +234,7 @@
     }
   }
 
-  function resetGame(){ if(confirm("清空大脑重置调教？")) roomRef.update({positions:[0,0], currentPlayer:0, lastMsg: {id: Date.now(), text: "调教重置"}}); }
+  function resetGame(){ if(confirm("重清空大脑重置调教？")) roomRef.update({positions:[0,0], currentPlayer:0, lastMsg: {id: Date.now(), text: "调教重置"}}); }
   window.addEventListener('resize', drawBoard);
 </script>
 </body>
