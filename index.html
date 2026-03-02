@@ -13,36 +13,24 @@
     
       /* ✅ 修复：BGM开关改为标准流，不再压字 */
   #bgm-header {
-    position: fixed; /* 始终在右上角，不随页面滚动乱动 */
-    top: 15px;       /* 距离顶部距离 */
-    right: 15px;     /* 距离右侧距离 */
-    z-index: 9999;
-    width: auto !important; /* 强制取消 100% 宽度 */
-  }
-
-  #bgm-ctrl {
-    display: inline-flex; /* 关键：让按钮宽度只包裹文字 */
-    align-items: center;
-    background: rgba(0, 0, 0, 0.85); 
-    border: 2px solid #db2777;
-    color: #ff0080; 
-    padding: 6px 12px; 
-    border-radius: 20px;
-    font-size: 11px; /* 稍微缩小一点防止抢戏 */
-    cursor: pointer;
-    box-shadow: 0 0 10px #ff0080;
-    white-space: nowrap; 
-  }
-
-  /* 2. 强制给标题容器增加顶部间距，确保和按钮隔开一行以上的距离 */
-  .max-w-4xl {
-    padding-top: 60px !important; /* 这个值决定了标题离顶部的距离，拉开一行空间 */
-  }
-
-<div id="bgm-header">
-  <div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
-</div>
-
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 9999;
+      width: auto;
+    }
+    #bgm-ctrl {
+      display: inline-block;
+      background: rgba(0, 0, 0, 0.85); 
+      border: 2px solid #db2777;
+      color: #ff0080; 
+      padding: 5px 12px; 
+      border-radius: 999px;
+      font-size: 12px; 
+      cursor: pointer;
+      box-shadow: 0 0 10px #ff0080;
+      white-space: nowrap;
+    }
     
     #board-container { 
       position: relative; 
