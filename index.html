@@ -50,11 +50,14 @@
   </style>
 </head>
 <body class="text-lime-300 p-4">
+<audio id="snd-bgm" src="assets/audio/bgm.mp3" loop preload="auto">
+<audio id="snd-dice" src="assets/audio/dice.mp3" preload="auto">
+<audio id="snd-task" src="assets/audio/task.mp3" preload="auto">
 
-<audio id="snd-bgm" src="assets/audio/bgm.mp3" loop preload="auto"></audio>
-<audio id="snd-dice" src="assets/audio/dice.mp3" preload="auto"></audio>
-<audio id="snd-task" src="assets/audio/task.mp3" preload="auto"></audio>
-
+<!-- 关键：给BGM按钮套上定位容器#bgm-header，样式才会生效 -->
+<div id="bgm-header">
+  <div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
+</div>
 <div class="max-w-4xl mx-auto pt-12 relative">
   <div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
   
