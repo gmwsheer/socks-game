@@ -8,9 +8,18 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { font-family: 'Courier New', monospace; background: linear-gradient(45deg, #1a0000, #330011); min-height: 100dvh; margin: 0; }
+   body { 
+      font-family: 'Courier New', monospace; 
+      /* 这里填写你上传到库里的图片文件名 bg.jpg */
+      background: url('bg.jpg') no-repeat center center;
+      background-size: cover; /* 覆盖整个屏幕 */
+      background-attachment: fixed; /* 滚动时固定背景，增加炫晕感 */
+      min-height: 100dvh; 
+      margin: 0; 
+      color: #bef264; 
+      overflow-x: hidden; 
+    }
     .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
-    
   /* ✅ 核心修复：BGM按钮强制缩短，死死钉在屏幕最右上角 */
     #bgm-header {
       position: fixed !important; /* 固定在窗口，不随滚动条走 */
