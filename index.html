@@ -47,11 +47,21 @@
             overflow: hidden; background: #000;
         }
         #board { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 10; }
-        #board-mask {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('assets/images/mask.gif') center/cover no-repeat;
-            opacity: 0.4; pointer-events: none; z-index: 20;
+                #board-mask {
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            /* 使用 GitHub 的原始资源地址确保加载成功，并添加黑色半透明遮罩叠加 */
+            background: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), 
+                        url('https://raw.githubusercontent.com/gmwsheer/socks-game/main/assets/images/mask.gif') center/cover no-repeat;
+            /* 这里的 opacity 控制整体透明度，0.6 比较清晰且有氛围 */
+            opacity: 0.6; 
+            pointer-events: none; 
+            z-index: 20;
         }
+
 
         /* 5. 底部按钮修复：严禁溢出，找回丢失的按钮样式 */
         .btn-group { display: flex; gap: 10px; width: 100%; margin-top: 10px; }
