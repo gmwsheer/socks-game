@@ -12,94 +12,64 @@
             margin: 0; padding: 0; min-height: 100vh;
             background-color: #0e000e; color: #bef264;
             font-family: 'Courier New', monospace;
-            position: relative; 
+            position: relative; overflow-x: hidden;
         }
-        /* 全局背景图 */
         body::before {
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: url('assets/images/bg.jpg') no-repeat center center;
             background-size: cover; opacity: 0.35; z-index: -1;
         }
 
-        /* BGM 按钮：随页面滚动，位于标题右上角 */
-        .header-container {
-            position: relative; 
-            padding-top: 50px;
-            text-align: center;
-        }
-        #bgm-header {
-            position: absolute !important; 
-            top: 10px !important;
-            right: 15px !important;
-            z-index: 50;
-        }
+        /* BGM 按钮：随页面滚动 */
+        .header-container { position: relative; padding-top: 50px; text-align: center; }
+        #bgm-header { position: absolute; top: 10px; right: 15px; z-index: 50; }
         #bgm-ctrl {
-            background: rgba(0, 0, 0, 0.8) !important;
-            border: 1px solid #ff0080 !important;
-            color: #ff0080 !important;
-            padding: 4px 8px !important;
-            border-radius: 12px !important;
-            font-size: 10px !important;
-            cursor: pointer;
+            background: rgba(0, 0, 0, 0.8); border: 1px solid #ff0080;
+            color: #ff0080; padding: 4px 8px; border-radius: 12px;
+            font-size: 10px; cursor: pointer;
         }
 
         .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
-
         .glass-panel {
-            background-color: rgba(0, 0, 0, 0.7) !important;
+            background-color: rgba(0, 0, 0, 0.75) !important;
             border: 2px solid #db2777 !important;
-            backdrop-filter: blur(8px);
-            border-radius: 1.5rem;
-            margin-bottom: 1rem;
-            padding: 1rem;
+            backdrop-filter: blur(8px); border-radius: 1.5rem;
+            margin-bottom: 1rem; padding: 1rem;
         }
 
-        /* ✅ 棋盘容器：找回 mask.gif */
+        /* ✅ 棋盘容器修复：确保 mask.gif 浮在最上层 */
         #board-container { 
             position: relative; width: 100%; max-width: 450px; aspect-ratio: 1/1; 
             margin: 0 auto; border: 4px solid #db2777; border-radius: 1.5rem;
-            overflow: hidden; background: rgba(0,0,0,0.3);
+            overflow: hidden; background: #000;
         }
-        #board { width: 100%; height: 100%; position: relative; z-index: 1; }
-        
-        /* ✅ 补回棋盘覆盖图 (mask.gif) */
+        #board { 
+            width: 100%; height: 100%; 
+            position: absolute; top: 0; left: 0; z-index: 10; 
+        }
         #board-mask {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: url('assets/images/mask.gif') center/cover no-repeat;
-            opacity: 0.35; /* 透明度你可以根据喜好微调 */
-            pointer-events: none; /* 确保不挡住棋盘点击 */
-            z-index: 2;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            /* 强制读取 mask.gif 并放在 Canvas 之上 */
+            background-image: url('assets/images/mask.gif') !important;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.4; /* 如果看不清，可以调高到 0.6 */
+            pointer-events: none; /* 关键：点击会穿透这张图点到下面的棋盘 */
+            z-index: 20; /* 必须比 Canvas 的 z-index 高 */
         }
 
-        /* 底部按钮：适配边框，不溢出 */
-        .btn-group {
-            display: flex;
-            gap: 8px;
-            width: 100%;
-            margin-top: 10px;
-        }
+        /* 底部按钮：严禁溢出 */
+        .btn-group { display: flex; gap: 8px; width: 100%; margin-top: 10px; box-sizing: border-box; }
         .btn-main {
-            flex: 2;
-            background-color: #db2777;
-            color: white;
-            font-weight: 900;
-            border-radius: 1rem;
-            padding: 12px 0;
-            font-size: 1.2rem;
-            text-align: center;
+            flex: 2; background-color: #db2777; color: white;
+            font-weight: 900; border-radius: 1rem; padding: 12px 0;
+            font-size: 1.2rem; text-align: center; border: none;
         }
         .btn-sub {
-            flex: 1;
-            background-color: #27272a;
-            color: #a1a1aa;
-            border-radius: 1rem;
-            padding: 12px 0;
-            font-size: 0.8rem;
-            text-align: center;
+            flex: 1; background-color: #27272a; color: #a1a1aa;
+            border-radius: 1rem; padding: 12px 0; font-size: 0.8rem;
+            text-align: center; border: none;
         }
-        
         #log { height: 100px; overflow-y: auto; font-size: 11px; color: #f472b6; }
     </style>
 </head>
