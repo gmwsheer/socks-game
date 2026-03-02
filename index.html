@@ -9,41 +9,37 @@
   <script src="https://cdn.tailwindcss.com"></script>
    
   <style>
-      /* BGM 控制按钮样式 */
-    #bgm-ctrl {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      z-index: 100;
-      background: rgba(0, 0, 0, 0.6);
-      border: 2px solid #db2777;
-      color: #ff0080;
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      cursor: pointer;
-      box-shadow: 0 0 10px #ff0080;
-    }
-    body { font-family: 'Courier New', monospace; background: linear-gradient(45deg, #1a0000, #330011); min-height: 100dvh; margin: 0; overscroll-behavior: none; }
+     body { font-family: 'Courier New', monospace; background: linear-gradient(45deg, #1a0000, #330011); min-height: 100dvh; margin: 0; overscroll-behavior: none; }
     .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
     #board-container { position: relative; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; margin: 0 auto; }
     #board { background: rgba(0,0,0,0.9); border-radius: 2rem; border: 6px solid #db2777; width: 100%; height: 100%; box-shadow: 0 0 50px #ff0080; }
     .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.5rem; transition: all 0.2s; }
+    
+    /* BGM 按钮：增加半透明毛玻璃效果，更高级 */
+    #bgm-ctrl {
+      position: fixed; top: 15px; right: 15px; z-index: 100;
+      background: rgba(0, 0, 0, 0.7); border: 2px solid #db2777;
+      color: #ff0080; padding: 6px 15px; border-radius: 20px;
+      font-size: 13px; cursor: pointer; box-shadow: 0 0 10px #ff0080;
+      backdrop-filter: blur(4px);
+    }
     #task { animation: silkPop 0.4s ease-out; }
     @keyframes silkPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     .msg-master { color: #ff0080; font-weight: bold; border-left: 4px solid #ff0080; padding-left: 8px; margin-bottom: 4px; }
   </style>
 </head>
 <body class="text-lime-300 p-4">
+
 <audio id="snd-bgm" src="assets/audio/bgm.mp3" loop></audio>
-<div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
 <audio id="snd-dice" src="assets/audio/dice.mp3" preload="auto"></audio>
 <audio id="snd-task" src="assets/audio/task.mp3" preload="auto"></audio>
 
-<div class="max-w-4xl mx-auto">
-  <div class="text-center mb-6">
+<div id="bgm-ctrl" onclick="toggleBGM()">🎵 BGM: OFF</div>
+
+<div class="max-w-4xl mx-auto pt-12">
+  <div class="text-center mb-8">
     <h1 class="text-4xl font-black text-pink-600 neon-pink">恶堕臭丝袜洗脑棋</h1>
-    <p class="text-pink-400 mt-2">成为主人的丝袜狗</p>
+    <p class="text-pink-400 mt-2 italic">成为主人的丝袜狗</p>
   </div>
 
   <div id="connPanel" class="bg-black/80 border-4 border-pink-600 p-6 rounded-3xl mb-6">
@@ -256,24 +252,7 @@
       drawBoard();
     }
   }
-  function toggleBGM() {
-    const bgm = document.getElementById("snd-bgm");
-    const btn = document.getElementById("bgm-ctrl");
-    if (bgm.paused) {
-      bgm.play();
-      btn.innerText = "🎵 BGM: ON";
-      btn.style.color = "#00ffff";
-      btn.style.boxShadow = "0 0 10px #00ffff";
-      btn.style.borderColor = "#00ffff";
-    } else {
-      bgm.pause();
-      btn.innerText = "🎵 BGM: OFF";
-      btn.style.color = "#ff0080";
-      btn.style.boxShadow = "0 0 10px #ff0080";
-      btn.style.borderColor = "#db2777";
-    }
-  }
-
+  
   window.addEventListener('resize', drawBoard);
 </script>
 </body>
