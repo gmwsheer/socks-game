@@ -9,67 +9,70 @@
   <script src="https://cdn.tailwindcss.com"></script>
 <style>
   /* 1. 背景图路径与固定设置 */
-  body { 
-      font-family: 'Courier New', monospace; 
-      /* 将你的背景图 assets/images/bg.jpg 放在这里 */
-      background: #1a001a url('assets/images/bg.jpg') no-repeat center center fixed !important;
-      background-size: cover !important; /* 覆盖整个屏幕 */
-      min-height: 100vh; 
-      margin: 0; 
-      color: #bef264; 
-      overflow-x: hidden; 
+   html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: #000 url('assets/images/bg.jpg') no-repeat center center fixed !important;
+      background-size: cover !important;
+      color: #bef264;
+      font-family: 'Courier New', monospace;
     }
-    .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
-    
-    /* 1. BGM 按钮定位：彻底变短，固定右上角 */
+
+    /* 2. BGM 按钮：钉在最右上角，不占空间 */
     #bgm-header {
       position: fixed !important;
-      top: 15px !important;
-      right: 15px !important;
-      z-index: 10000; /* 确保在最顶层 */
+      top: 10px !important;
+      right: 10px !important;
+      z-index: 10000;
       width: auto !important;
     }
     #bgm-ctrl {
-      display: inline-flex !important; /* 关键：只包裹文字 */
+      display: inline-flex !important;
       align-items: center;
-      background: rgba(0, 0, 0, 0.85) !important; /* 稍深一点的半透明 */
-      border: 2px solid #db2777;
-      color: #ff0080; 
-      padding: 5px 12px !important; 
-      border-radius: 999px;
-      font-size: 12px; 
+      background: rgba(0, 0, 0, 0.6) !important;
+      border: 1px solid #ff0080 !important;
+      color: #ff0080 !important;
+      padding: 4px 10px !important;
+      border-radius: 20px !important;
+      font-size: 10px !important;
+      font-weight: bold;
+      box-shadow: 0 0 10px rgba(255, 0, 128, 0.5);
       cursor: pointer;
-      box-shadow: 0 0 10px #ff0080;
-      white-space: nowrap !important;
     }
+
+    /* 3. 布局偏移修复：加大顶部间距，彻底避开 BGM 按钮 */
+    .main-layout {
+      margin-top: 110px !important; /* 增加到 110px，防止标题被盖住 */
+      padding: 0 16px 40px 16px;
+    }
+
+    .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
     
-    /* 2. 界面层级：所有的黑色面板改为半透明，以透出背景图 */
+    /* 4. 半透明面板：大幅降低透明度 (0.4) 并增强模糊 (12px) */
     #connPanel, #gameArea > div, #log {
-      background-color: rgba(0, 0, 0, 0.85) !important; /* 半透明黑 */
+      background-color: rgba(0, 0, 0, 0.4) !important; /* 极高透明度 */
+      border: 2px solid rgba(219, 39, 119, 0.5) !important; /* 边框也做成半透明 */
+      backdrop-filter: blur(12px) !important; /* 强力模糊，透出背景色块 */
+      -webkit-backdrop-filter: blur(12px) !important;
       border-radius: 1.5rem;
     }
 
     #board-container { 
-      position: relative; 
-      width: 100%; max-width: 600px; aspect-ratio: 1 / 1; 
-      margin: 0 auto; border-radius: 2rem; border: 6px solid #db2777;
-      box-shadow: 0 0 40px #ff0080; overflow: hidden; 
-      background-color: rgba(0, 0, 0, 0.9); /* 棋盘底色稍深 */
+      position: relative; width: 100%; max-width: 500px; aspect-ratio: 1 / 1; 
+      margin: 0 auto; border-radius: 1.5rem; border: 4px solid #db2777;
+      box-shadow: 0 0 30px #ff0080; overflow: hidden; background: rgba(0,0,0,0.3);
     }
     #board { width: 100%; height: 100%; display: block; position: relative; z-index: 10; }
-    
-    /* 这是棋盘上的 GIF 遮罩 */
     #board-gif-overlay {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: url('assets/images/mask.gif') center/cover no-repeat;
-      opacity: 0.35; pointer-events: none; z-index: 5;
+      opacity: 0.3; pointer-events: none; z-index: 5;
     }
-    
-    .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.5rem; }
-    #task { animation: silkPop 0.3s ease-out; }
-    @keyframes silkPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-</style>
+    .btn-xl { padding: 1.25rem; font-size: 1.25rem; font-weight: 900; border-radius: 1.25rem; }
+  </style>
 </head>
+<body>
 <body class="p-4">
 
 <div id="bgm-header">
