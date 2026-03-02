@@ -10,20 +10,15 @@
   <style>
    /* 确保背景图在所有手机上都能完美覆盖且不拉伸 */
 body {
-  background: #000 url('bg.jpg') no-repeat center center fixed;
-  background-size: cover;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;
-}
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: #1a001a url('assets/images/bg.jpg') no-repeat center center fixed !important;
+      background-size: cover !important;
+      color: #bef264;
+      font-family: 'Courier New', monospace;
+    }
 
-/* 按钮的最终保险：增加 inline-flex 确保它是包裹文字的最小宽度 */
-#bgm-ctrl {
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  min-width: 80px; /* 给个保底宽度，防止只有一个图标时太丑 */
-}
   /* ✅ 核心修复：BGM按钮强制缩短，死死钉在屏幕最右上角 */
     #bgm-header {
       position: fixed !important; /* 固定在窗口，不随滚动条走 */
