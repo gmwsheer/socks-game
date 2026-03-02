@@ -7,62 +7,71 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-   /* 确保背景图在所有手机上都能完美覆盖且不拉伸 */
-body {
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      background: #1a001a url('assets/images/bg.jpg') no-repeat center center fixed !important;
-      background-size: cover !important;
-      color: #bef264;
-      font-family: 'Courier New', monospace;
-    }
+<style>
+  /* 1. 背景图路径与固定设置 */
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: #1a001a url('assets/images/bg.jpg') no-repeat center center fixed !important;
+    background-size: cover !important;
+    color: #bef264;
+    font-family: 'Courier New', monospace;
+  }
 
-  /* ✅ 核心修复：BGM按钮强制缩短，死死钉在屏幕最右上角 */
-    #bgm-header {
-      position: fixed !important; /* 固定在窗口，不随滚动条走 */
-      top: 10px !important;
-      right: 10px !important;
-      z-index: 10000; /* 确保在最顶层 */
-      width: auto !important; /* 严禁占满全宽 */
-      display: block !important;
-    }
+  /* 2. 右上角 BGM 按钮瘦身 */
+  #bgm-header {
+    position: fixed !important;
+    top: 15px !important;
+    right: 15px !important;
+    z-index: 100000;
+    width: auto !important;
+  }
+  #bgm-ctrl {
+    display: inline-flex !important;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.85) !important;
+    border: 2px solid #ff0080 !important;
+    color: #ff0080 !important;
+    padding: 5px 12px !important;
+    border-radius: 20px !important;
+    font-size: 11px !important;
+    box-shadow: 0 0 15px rgba(255, 0, 128, 0.6);
+    white-space: nowrap !important;
+  }
 
-    #bgm-ctrl {
-      display: inline-block !important; /* 让背景只包裹文字 */
-      background: rgba(0, 0, 0, 0.9) !important; 
-      border: 2px solid #db2777 !important;
-      color: #ff0080 !important; 
-      padding: 4px 10px !important; 
-      border-radius: 20px !important;
-      font-size: 11px !important; 
-      cursor: pointer;
-      box-shadow: 0 0 10px #ff0080;
-      white-space: nowrap !important; /* 防止文字折行导致变长 */
-    }
+  /* 3. 核心：半透明与毛玻璃效果 */
+  #connPanel, #gameArea > div, #log {
+    background-color: rgba(0, 0, 0, 0.75) !important; /* 0.75就是半透明度 */
+    border: 2px solid #db2777 !important;
+    backdrop-filter: blur(5px); /* 毛玻璃模糊 */
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 1.5rem;
+  }
 
-    /* ✅ 核心修复：强制标题向下移动，给右上角腾出清爽的空间 */
-    .game-main-container {
-      margin-top: 50px !important; /* 这个间距确保标题不会碰到右上角的按钮 */
-    }
-    
-    #board-container { 
-      position: relative; width: 100%; max-width: 600px; aspect-ratio: 1 / 1; 
-      margin: 0 auto; border-radius: 2rem; border: 6px solid #db2777;
-      box-shadow: 0 0 40px #ff0080; overflow: hidden; background: #000;
-    }
-    #board { width: 100%; height: 100%; display: block; position: relative; z-index: 10; }
-    #board-gif-overlay {
-      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: url('assets/images/mask.gif') center/cover no-repeat;
-      opacity: 0.35; pointer-events: none; z-index: 5;
-    }
-    .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.5rem; transition: transform 0.1s; }
-    .btn-xl:active { transform: scale(0.95); }
-    #task { animation: silkPop 0.3s ease-out; }
-    @keyframes silkPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  </style>
+  /* 4. 标题向下移动，防止重叠 */
+  .main-layout {
+    margin-top: 80px !important; 
+    padding: 0 15px 40px 15px;
+  }
+
+  .neon-pink { text-shadow: 0 0 15px #ff0080, 0 0 30px #ff0080; }
+  
+  #board-container { 
+    position: relative; width: 100%; max-width: 500px; aspect-ratio: 1 / 1; 
+    margin: 0 auto; border-radius: 1.5rem; border: 4px solid #db2777;
+    box-shadow: 0 0 30px #ff0080; overflow: hidden;
+    background: rgba(0,0,0,0.5); 
+  }
+  #board { width: 100%; height: 100%; display: block; position: relative; z-index: 10; }
+  #board-gif-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: url('assets/images/mask.gif') center/cover no-repeat;
+    opacity: 0.35; pointer-events: none; z-index: 5;
+  }
+  .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.25rem; }
+</style>
+
 </head>
 <body class="p-4">
 
