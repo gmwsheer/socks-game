@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>老子臭丝袜飞行棋 - BGM修正版</title>
+  <title>老子臭丝袜飞行棋</title>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,27 +21,24 @@
       border-radius: 2rem;
       border: 6px solid #db2777;
       box-shadow: 0 0 50px #ff0080;
-      overflow: hidden; /* 确保GIF不超出圆角 */
+      overflow: hidden; 
+      background: #000;
     }
-    #board { background: rgba(0,0,0,0.9); width: 100%; height: 100%; display: block; }
+    #board { width: 100%; height: 100%; display: block; position: relative; z-index: 1; }
 
-    /* ✅ GIF 半透明遮罩层 */
+    /* ✅ 棋盘整体半透明 GIF 叠加层 */
     #board-gif-overlay {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      /* 替换下方的 URL 为你的 GIF 地址 */
-      background: url('你的GIF图片地址') center/cover no-repeat;
-      opacity: 0.3; /* 透明度，越小越淡 */
-      pointer-events: none; /* ❗关键：允许点击穿透到下方的棋盘 */
+      top: 0; left: 0; width: 100%; height: 100%;
+      /* 这里的路径对应你上传到 images 文件夹的文件 */
+      background: url('assets/images/mask.gif') center/cover no-repeat;
+      opacity: 0.3; /* 透明度 0.3 */
+      pointer-events: none; /* ❗关键：允许点击穿透，不影响棋盘操作 */
       z-index: 5;
     }
 
     .btn-xl { padding: 1.25rem; font-size: 1.5rem; font-weight: 900; border-radius: 1.5rem; transition: all 0.2s; }
     
-    /* BGM 按钮样式 */
     #bgm-ctrl {
       position: fixed; top: 15px; right: 15px; z-index: 100;
       background: rgba(0, 0, 0, 0.7); border: 2px solid #db2777;
@@ -78,16 +75,21 @@
   </div>
 
   <div id="gameArea" class="hidden space-y-4">
+    <div class="bg-pink-900/40 border-2 border-pink-500 p-2 rounded-2xl text-center">
+      <span class="text-pink-300 text-sm">当前调教房号：</span>
+      <span id="currentIDLabel" class="text-2xl font-mono font-black text-white"></span>
+    </div>
+
     <div id="board-container">
       <canvas id="board"></canvas>
       <div id="board-gif-overlay"></div>
     </div>
 
-    <div id="info" class="bg-black/80 border-4 border-pink-500 p-4 rounded-2xl text-center text-xl font-black">等待同步...</div>
+    <div id="info" class="bg-black/80 border-4 border-pink-500 p-4 rounded-2xl text-center text-xl font-black shadow-inner">等待同步...</div>
     
     <div class="flex gap-2">
-      <button onclick="rollDice()" id="rollBtn" class="flex-[2] bg-pink-600 text-white text-2xl font-black py-4 rounded-2xl shadow-lg active:scale-95">掷骰子</button>
-      <button onclick="resetGame()" class="flex-1 bg-zinc-800 text-white rounded-2xl text-sm">重置</button>
+      <button onclick="rollDice()" id="rollBtn" class="flex-[2] bg-pink-600 text-white text-2xl font-black py-4 rounded-2xl shadow-lg active:scale-95 disabled:opacity-50">恶堕吧</button>
+      <button onclick="resetGame()" class="flex-1 bg-zinc-800 text-white rounded-2xl text-sm">清空大脑</button>
     </div>
     <div id="log" class="bg-black/90 border-2 border-pink-900 p-4 rounded-xl h-40 overflow-y-auto font-mono text-sm text-pink-300"></div>
   </div>
@@ -101,7 +103,7 @@
 </div>
 
 <script>
-  // Firebase 配置保留原样
+  // ✅ 你的 Firebase 配置
   const firebaseConfig = {
     apiKey: "AIzaSyCzuqADikKXCOKtQXoiVkGRjPiceY-HVDk",
     authDomain: "swsgfxq-game.firebaseapp.com",
